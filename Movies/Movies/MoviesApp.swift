@@ -6,9 +6,15 @@
 //
 
 import SwiftUI
+import MoviesDesignSystem
 
 @main
 struct MoviesApp: App {
+    init() {
+        // Configure Kingfisher for optimal movie image loading
+        KingfisherConfig.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

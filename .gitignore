@@ -4,6 +4,9 @@
 
 ## User settings
 xcuserdata/
+*.xcuserstate
+*.xcscheme
+xcschemes/
 
 ## Obj-C/Swift specific
 *.hmap
@@ -60,3 +63,103 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+Package.pins
+Package.resolved
+
+# Xcode
+*.swp
+*.lock
+*.tmp
+*~
+
+# Build artifacts
+build/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.moved-aside
+
+# Test artifacts
+*.xctest
+*.gcno
+*.gcda
+
+# SwiftLint
+.swiftlint.yml
+.swiftlint.cache
+
+# SwiftFormat
+.swiftformat
+
+# Danger
+Dangerfile
+.danger/
+
+# AppCode
+.idea/
+
+# Ruby (for CocoaPods/fastlane)
+.bundle/
+vendor/bundle/
+.ruby-version
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+*.log
+logs/
+
+# Crash logs
+*.crash
+*.ips
+
+# Backup files
+*.bak
+*.backup
+*.orig
+*.swp
+*.swo
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Documentation
+docs/
+*.docset
