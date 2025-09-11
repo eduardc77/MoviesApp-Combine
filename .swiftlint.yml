@@ -7,14 +7,19 @@ included:
 
 # Globally exclude build artifacts
 excluded:
+  - .build
+  - build
+  - DerivedData
+  - build/
+  - DerivedData/
+  - SourcePackages
+  - Pods
+  - .swiftpm
+  - Carthage
   - ".build/**"
   - "build/**"
-  - "DerivedData/**"
   - "**/SourcePackages/**"
   - "**/checkouts/**"
-  - "**/.swiftpm/**"
-  - "Pods/**"
-  - "Carthage/**"
   - "**/*.xcodeproj/**"
   - "**/*.xcworkspace/**"
   - "**/ModuleCache.noindex/**"
@@ -24,7 +29,6 @@ excluded:
   - "**/*Tests*/**"
   - "**/*Test*.swift"
   - "**/*Spec*.swift"
-  - "**/Kingfisher/**"
 
 # Opt-in rules for better code quality
 opt_in_rules:

@@ -52,6 +52,9 @@ public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable 
             }
             .decode(type: T.self, decoder: decoder)
             .mapError { error in
+                if let tmdbError = error as? TMDBNetworkingError {
+                    return tmdbError
+                }
                 if let decodingError = error as? DecodingError {
                     return TMDBNetworkingError.decodingError(decodingError)
                 }

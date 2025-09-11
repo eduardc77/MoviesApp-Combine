@@ -18,10 +18,11 @@ struct MoviesApp: App {
     private let appRouter: AppRouter
 
     init() {
-        // Configure Kingfisher for optimal movie image loading
+        // Configure Kingfisher
         KingfisherConfig.configure()
-        // Configure global navigation/tab appearance
+        // Configure global navigation/tab and search appearance
         NavigationAppearance.configure()
+        SearchBarAppearance.configure()
 
         self.appEnvironment = AppEnvironment()
 

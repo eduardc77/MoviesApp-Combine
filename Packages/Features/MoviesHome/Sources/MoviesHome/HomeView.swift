@@ -43,8 +43,7 @@ public struct HomeView: View {
                     .foregroundColor(.red)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if viewModel.isLoading && viewModel.items.isEmpty {
-                ProgressView("Loading movies...")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                LoadingView()
             } else {
                 TabView(selection: $selectedTab) {
                     ForEach(HomeCategory.allCases) { category in
@@ -59,12 +58,16 @@ public struct HomeView: View {
                         .tag(category)
                     }
                 }
+                #if os(iOS)
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                #endif
             }
 
         }
-        .navigationTitle("Home")
+        .navigationTitle(Text(.HomeL10n.title))
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .movieSortToolbar(isPresented: $showingSortSheet) { order in
             viewModel.setSortOrder(order)
         }

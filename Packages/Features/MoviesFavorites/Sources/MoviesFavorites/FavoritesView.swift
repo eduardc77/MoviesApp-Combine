@@ -24,19 +24,24 @@ public struct FavoritesView: View {
     public var body: some View {
         Group {
             if viewModel.isLoading {
-                VStack {
-                    ProgressView("Loading favorites...")
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                LoadingView()
+                #if canImport(UIKit)
                 .background(Color(.systemGray6))
+                #else
+                .background(Color.gray.opacity(0.2))
+                #endif
             } else if viewModel.items.isEmpty {
-                ContentUnavailableView(
-                    "No Favorites Yet",
-                    systemImage: "heart.fill",
-                    description: Text("Tap the heart on a movie to add it here.")
-                )
+                ContentUnavailableView {
+                    Label(String(localized: .FavoritesL10n.emptyTitle), systemImage: "heart.fill")
+                } description: {
+                    Text(.FavoritesL10n.emptyDescription)
+                }
                 .frame(maxWidth: .infinity)
+                #if canImport(UIKit)
                 .background(Color(.systemGray6))
+                #else
+                .background(Color.gray.opacity(0.2))
+                #endif
             } else {
                 CardGridView(items: viewModel.items,
                              onTap: { item in appRouter.navigateToMovieDetails(movieId: item.id) },
@@ -44,8 +49,10 @@ public struct FavoritesView: View {
                              isFavorite: { item in viewModel.isFavorite(item.id) })
             }
         }
-        .navigationTitle("Favorites")
+        .navigationTitle(Text(.FavoritesL10n.title))
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .movieSortToolbar(isPresented: $showingSortSheet) { order in
             viewModel.setSortOrder(order)
         }

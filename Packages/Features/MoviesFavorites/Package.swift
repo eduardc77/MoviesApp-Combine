@@ -18,6 +18,7 @@ let package = Package(
     dependencies: [
         .package(path: "../../Core/MoviesDomain"),
         .package(path: "../../Core/MoviesPersistence"),
+        .package(path: "../../Core/MoviesNavigation"),
         .package(path: "../../Core/MoviesDesignSystem"),
         .package(path: "../../Core/MoviesUtilities")
     ],
@@ -27,8 +28,12 @@ let package = Package(
             dependencies: [
                 "MoviesDomain",
                 "MoviesPersistence",
+                "MoviesNavigation",
                 "MoviesDesignSystem",
                 "MoviesUtilities"
+            ],
+            resources: [
+                .process("Resources")
             ]
         ),
         .testTarget(

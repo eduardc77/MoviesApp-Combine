@@ -23,18 +23,23 @@ public struct SearchView: View {
     public var body: some View {
         VStack(spacing: 0) {
             if viewModel.isLoading {
-                ProgressView("Searching...")
+                LoadingView()
             } else if viewModel.items.isEmpty {
-                ContentUnavailableView(
-                    viewModel.query.isEmpty ? "Search Movies" : "No Results",
-                    systemImage: viewModel.query.isEmpty ? "magnifyingglass" : "film",
-                    description: Text(viewModel.query.isEmpty ?
-                                      "Type to search for movies":
-                                        "Try a different query or spelling."
-                                     )
-                )
+
+                ContentUnavailableView {
+                    Label(
+                        viewModel.isQueryShort ? String(localized: .SearchL10n.emptyTitle) : String(localized: .SearchL10n.noResultsDescription),
+                        systemImage: viewModel.isQueryShort ? "magnifyingglass" : "film"
+                    )
+                } description: {
+                    Text(viewModel.isQueryShort ? .SearchL10n.emptyDescription : .SearchL10n.noResultsDescription)
+                }
                 .frame(maxWidth: .infinity)
+                #if canImport(UIKit)
                 .background(Color(.systemGray6))
+                #else
+                .background(Color.gray.opacity(0.2))
+                #endif
             } else {
                 CardGridView(items: viewModel.items,
                              onTap: { item in appRouter.navigateToMovieDetails(movieId: item.id) },
@@ -45,7 +50,8 @@ public struct SearchView: View {
             }
         }
 
-        .navigationTitle("Search")
+        .navigationTitle(Text(.SearchL10n.title))
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $viewModel.query,
                     placement: .navigationBarDrawer(displayMode: .always),
@@ -54,6 +60,7 @@ public struct SearchView: View {
             viewModel.search(reset: true)
         }
         .searchPresentationToolbarBehavior(.avoidHidingContent)
+        #endif
         .movieSortToolbar(isPresented: $showingSortSheet) { order in
             viewModel.setSortOrder(order)
         }

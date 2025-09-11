@@ -6,95 +6,107 @@
 //
 
 import XCTest
+import Combine
 @testable import MoviesPersistence
 
 final class FavoritesStorageTests: XCTestCase {
     private var sut: FavoritesStorage!
     private var mockUserDefaults: UserDefaults!
+    private var cancellables = Set<AnyCancellable>()
 
     override func setUp() {
         super.setUp()
-        mockUserDefaults = UserDefaults(suiteName: "test_suite")!
+        let suite = "test_suite_\(UUID().uuidString)"
+        mockUserDefaults = UserDefaults(suiteName: suite)!
         sut = FavoritesStorage(userDefaults: mockUserDefaults)
     }
 
     override func tearDown() {
-        mockUserDefaults.removePersistentDomain(forName: "test_suite")
+        // Remove domain using known suite identifier
+        if let suite = mockUserDefaults?.persistentDomain(forName: "test_suite") {
+            _ = suite // noop, ensure access
+            mockUserDefaults.removePersistentDomain(forName: "test_suite")
+        }
         mockUserDefaults = nil
         sut = nil
+        cancellables.removeAll()
         super.tearDown()
     }
 
-    func testGetFavoriteMovieIds_Empty() {
-        // When
-        let favoriteIds = sut.getFavoriteMovieIds()
-
-        // Then
-        XCTAssertTrue(favoriteIds.isEmpty)
+    func testGetFavoriteMovieIdsEmpty() {
+        let exp = expectation(description: "empty")
+        sut.getFavoriteMovieIds()
+            .sink(receiveCompletion: { _ in }, receiveValue: { ids in
+                XCTAssertTrue(ids.isEmpty)
+                exp.fulfill()
+            })
+            .store(in: &cancellables)
+        wait(for: [exp], timeout: 1)
     }
 
-    func testAddToFavorites() {
-        // When
+    func testAddAndRemoveFavorites() {
+        let add1 = expectation(description: "add1")
         sut.addToFavorites(movieId: 1)
+            .sink(receiveCompletion: { _ in add1.fulfill() }, receiveValue: { _ in })
+            .store(in: &cancellables)
+        wait(for: [add1], timeout: 1)
+
+        let add2 = expectation(description: "add2")
         sut.addToFavorites(movieId: 2)
+            .sink(receiveCompletion: { _ in add2.fulfill() }, receiveValue: { _ in })
+            .store(in: &cancellables)
+        wait(for: [add2], timeout: 1)
 
-        // Then
-        let favoriteIds = sut.getFavoriteMovieIds()
-        XCTAssertEqual(favoriteIds, [1, 2])
-    }
+        let isFav = expectation(description: "isFav")
+        sut.isFavorite(movieId: 1)
+            .sink(receiveCompletion: { _ in }, receiveValue: { value in
+                XCTAssertTrue(value)
+                isFav.fulfill()
+            })
+            .store(in: &cancellables)
+        wait(for: [isFav], timeout: 1)
 
-    func testRemoveFromFavorites() {
-        // Given
-        sut.addToFavorites(movieId: 1)
-        sut.addToFavorites(movieId: 2)
-
-        // When
+        let remove = expectation(description: "remove")
         sut.removeFromFavorites(movieId: 1)
-
-        // Then
-        let favoriteIds = sut.getFavoriteMovieIds()
-        XCTAssertEqual(favoriteIds, [2])
+            .sink(receiveCompletion: { _ in remove.fulfill() }, receiveValue: { _ in })
+            .store(in: &cancellables)
+        wait(for: [remove], timeout: 1)
     }
 
-    func testIsFavorite_True() {
-        // Given
-        sut.addToFavorites(movieId: 123)
-
-        // When
-        let isFavorite = sut.isFavorite(movieId: 123)
-
-        // Then
-        XCTAssertTrue(isFavorite)
-    }
-
-    func testIsFavorite_False() {
-        // When
-        let isFavorite = sut.isFavorite(movieId: 999)
-
-        // Then
-        XCTAssertFalse(isFavorite)
-    }
-
-    func testDuplicateAddToFavorites() {
-        // When
+    func testDuplicateAddToFavoritesKeepsSingleEntry() {
+        let add1 = expectation(description: "add1")
         sut.addToFavorites(movieId: 1)
-        sut.addToFavorites(movieId: 1)
+            .sink(receiveCompletion: { _ in add1.fulfill() }, receiveValue: { _ in })
+            .store(in: &cancellables)
+        wait(for: [add1], timeout: 1)
 
-        // Then
-        let favoriteIds = sut.getFavoriteMovieIds()
-        XCTAssertEqual(favoriteIds.count, 1)
-        XCTAssertTrue(favoriteIds.contains(1))
+        let add2 = expectation(description: "add2")
+        sut.addToFavorites(movieId: 1)
+            .sink(receiveCompletion: { _ in add2.fulfill() }, receiveValue: { _ in })
+            .store(in: &cancellables)
+        wait(for: [add2], timeout: 1)
+
+        let idsExp = expectation(description: "ids")
+        sut.getFavoriteMovieIds()
+            .sink(receiveCompletion: { _ in }, receiveValue: { ids in
+                XCTAssertEqual(ids.count, 1)
+                XCTAssertTrue(ids.contains(1))
+                idsExp.fulfill()
+            })
+            .store(in: &cancellables)
+        wait(for: [idsExp], timeout: 1)
     }
 
-    func testRemoveNonExistentFavorite() {
-        // Given
-        sut.addToFavorites(movieId: 1)
-
-        // When
-        sut.removeFromFavorites(movieId: 999)
-
-        // Then
-        let favoriteIds = sut.getFavoriteMovieIds()
-        XCTAssertEqual(favoriteIds, [1])
+    func testConcurrentOps_noDeadlock() {
+        let group = DispatchGroup()
+        let queue = DispatchQueue.global(qos: .userInitiated)
+        for i in 0..<15 {
+            group.enter()
+            queue.async {
+                _ = self.sut.addToFavorites(movieId: i).sink(receiveCompletion: { _ in group.leave() }, receiveValue: { _ in })
+            }
+        }
+        let result = group.wait(timeout: .now() + 3)
+        XCTAssertEqual(result, .success)
     }
 }

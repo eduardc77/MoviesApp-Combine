@@ -19,6 +19,7 @@ let package = Package(
         .package(path: "../../Core/MoviesDomain"),
         .package(path: "../../Core/MoviesNetwork"),
         .package(path: "../../Core/MoviesPersistence"),
+        .package(path: "../../Core/MoviesNavigation"),
         .package(path: "../../Core/MoviesDesignSystem"),
         .package(path: "../../Core/MoviesUtilities")
     ],
@@ -29,8 +30,12 @@ let package = Package(
                 "MoviesDomain",
                 "MoviesNetwork",
                 "MoviesPersistence",
+                "MoviesNavigation",
                 "MoviesDesignSystem",
                 "MoviesUtilities"
+            ],
+            resources: [
+                .process("Resources")
             ]
         ),
         .testTarget(
