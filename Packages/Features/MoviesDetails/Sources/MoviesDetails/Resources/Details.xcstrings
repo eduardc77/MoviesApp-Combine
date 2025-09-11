@@ -1,0 +1,16 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "details.not_found" : {
+      "comment" : "Shown when a movie cannot be found.",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Movie not found" } } }
+    },
+    "details.title" : {
+      "comment" : "Navigation title for details header (fallback).",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Details" } } }
+    }
+  },
+  "version" : "1.0"
+}
+
+

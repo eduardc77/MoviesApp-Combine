@@ -1,0 +1,38 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "ds.loading" : {
+      "comment" : "Generic loading text used across the app.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading..." } }
+      }
+    },
+    "ds.updated" : {
+      "comment" : "Full sentence shown under items to indicate last activity. Replace %1$@ with a localized relative time, for example '2 hours ago'.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Updated %1$@" } }
+      }
+    },
+    "ds.loading_more" : {
+      "comment" : "Short status text shown at the bottom of lists while more items are loading.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Loading more..." } }
+      }
+    },
+    "ds.none" : {
+      "comment" : "Text shown when there are no items or counts to display.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "None" } }
+      }
+    },
+    "ds.error" : {
+      "comment" : "Short error label prefix.",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Error" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
+
+
