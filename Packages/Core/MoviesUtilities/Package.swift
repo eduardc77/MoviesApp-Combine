@@ -4,7 +4,10 @@ import PackageDescription
 let package = Package(
     name: "MoviesUtilities",
     platforms: [
-        .iOS(.v17)
+        .iOS("17.1"),
+        .macOS(.v14),
+        .watchOS(.v9),
+        .tvOS(.v16)
     ],
     products: [
         .library(

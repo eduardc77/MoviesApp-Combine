@@ -4,7 +4,10 @@ import PackageDescription
 let package = Package(
     name: "MoviesPersistence",
     platforms: [
-        .iOS(.v17)
+        .iOS("17.1"),
+        .macOS(.v14),
+        .watchOS(.v9),
+        .tvOS(.v16)
     ],
     products: [
         .library(
@@ -13,13 +16,13 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../MoviesModels"),
+        .package(path: "../MoviesDomain"),
         .package(path: "../MoviesUtilities")
     ],
     targets: [
         .target(
             name: "MoviesPersistence",
-            dependencies: ["MoviesModels", "MoviesUtilities"]
+            dependencies: ["MoviesDomain", "MoviesUtilities"]
         ),
         .testTarget(
             name: "MoviesPersistenceTests",

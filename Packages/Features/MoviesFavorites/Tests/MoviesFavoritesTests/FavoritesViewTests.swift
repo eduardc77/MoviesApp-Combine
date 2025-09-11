@@ -1,3 +1,10 @@
+//
+//  FavoritesViewTests.swift
+//  MoviesFavoritesTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 @testable import MoviesFavorites
 

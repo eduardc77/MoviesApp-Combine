@@ -24,63 +24,87 @@ public struct NetworkingConfig: Sendable {
 }
 
 public enum TMDBNetworkingConfig {
+    /// Static configuration loaded once at module initialization
+    public static let config: NetworkingConfig = {
+        do {
+            return try loadFromInfoPlist()
+        } catch {
+            fatalError("Failed to load TMDB configuration: \(error.localizedDescription)")
+        }
+    }()
+
+    /// Load configuration from Info.plist
     public static func loadFromInfoPlist() throws -> NetworkingConfig {
+        // Validate Info.plist exists
         guard let dict = Bundle.main.infoDictionary else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Unable to load Info.plist"]
-            )
+            throw ConfigurationError.missingInfoPlist
         }
 
+        // Validate TMDB configuration section
         guard let tmdb = dict["TMDBConfiguration"] as? [String: Any] else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 2,
-                userInfo: [NSLocalizedDescriptionKey: "Missing TMDBConfiguration section in Info.plist"]
+            throw ConfigurationError.missingConfigurationSection(
+                "Missing 'TMDBConfiguration' in Info.plist. Add:\n" +
+                "<key>TMDBConfiguration</key>\n<dict>...</dict>"
             )
         }
 
-        guard let baseURLString = tmdb["TMDBBaseURL"] as? String else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 3,
-                userInfo: [NSLocalizedDescriptionKey: "Missing TMDBBaseURL in Info.plist"]
-            )
+        // Validate and parse base URL
+        guard let baseURLString = tmdb["TMDBBaseURL"] as? String, !baseURLString.isEmpty else {
+            throw ConfigurationError.missingRequiredValue("TMDBBaseURL")
         }
 
         guard let baseURL = URL(string: baseURLString) else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 4,
-                userInfo: [NSLocalizedDescriptionKey: "Invalid TMDBBaseURL format: \(baseURLString)"]
-            )
+            throw ConfigurationError.invalidURLFormat("TMDBBaseURL", baseURLString)
         }
 
-        guard let imageBaseURLString = tmdb["TMDBImageBaseURL"] as? String else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 5,
-                userInfo: [NSLocalizedDescriptionKey: "Missing TMDBImageBaseURL in Info.plist"]
-            )
+        // Validate and parse image base URL
+        guard let imageBaseURLString = tmdb["TMDBImageBaseURL"] as? String, !imageBaseURLString.isEmpty else {
+            throw ConfigurationError.missingRequiredValue("TMDBImageBaseURL")
         }
 
         guard let imageBaseURL = URL(string: imageBaseURLString) else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 6,
-                userInfo: [NSLocalizedDescriptionKey: "Invalid TMDBImageBaseURL format: \(imageBaseURLString)"]
-            )
+            throw ConfigurationError.invalidURLFormat("TMDBImageBaseURL", imageBaseURLString)
         }
 
+        // Validate API key
         guard let apiKey = tmdb["TMDBAPIKey"] as? String, !apiKey.isEmpty else {
-            throw NSError(
-                domain: "MoviesUtilities",
-                code: 7,
-                userInfo: [NSLocalizedDescriptionKey: "Missing or empty TMDBAPIKey in Info.plist"]
-            )
+            throw ConfigurationError.missingRequiredValue("TMDBAPIKey")
         }
 
         return NetworkingConfig(baseURL: baseURL, apiKey: apiKey, imageBaseURL: imageBaseURL)
+    }
+}
+
+/// Errors for configuration loading from Info.plist
+public enum ConfigurationError: LocalizedError {
+    case missingInfoPlist
+    case missingConfigurationSection(String)
+    case missingRequiredValue(String)
+    case invalidURLFormat(String, String)
+
+    public var errorDescription: String? {
+        switch self {
+        case .missingInfoPlist:
+            return "Info.plist not found"
+        case .missingConfigurationSection(let message):
+            return "Configuration error: \(message)"
+        case .missingRequiredValue(let key):
+            return "Missing \(key) in Info.plist"
+        case .invalidURLFormat(let key, let value):
+            return "Invalid \(key) URL: \(value)"
+        }
+    }
+
+    public var recoverySuggestion: String? {
+        switch self {
+        case .missingInfoPlist:
+            return "Add Info.plist to your app"
+        case .missingConfigurationSection:
+            return "Add TMDBConfiguration to Info.plist"
+        case .missingRequiredValue:
+            return "Add the missing key to TMDBConfiguration"
+        case .invalidURLFormat:
+            return "Fix the URL format"
+        }
     }
 }

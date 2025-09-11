@@ -4,7 +4,10 @@ import PackageDescription
 let package = Package(
     name: "MoviesNetwork",
     platforms: [
-        .iOS(.v17)
+        .iOS("17.1"),
+        .macOS(.v14),
+        .watchOS(.v9),
+        .tvOS(.v16)
     ],
     products: [
         .library(
@@ -13,12 +16,13 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../MoviesModels")
+        .package(path: "../MoviesDomain"),
+        .package(path: "../MoviesUtilities")
     ],
     targets: [
         .target(
             name: "MoviesNetwork",
-            dependencies: ["MoviesModels"]
+            dependencies: ["MoviesDomain", "MoviesUtilities"]
         ),
         .testTarget(
             name: "MoviesNetworkTests",

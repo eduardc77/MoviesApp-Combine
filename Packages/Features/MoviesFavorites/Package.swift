@@ -4,7 +4,10 @@ import PackageDescription
 let package = Package(
     name: "MoviesFavorites",
     platforms: [
-        .iOS(.v17)
+        .iOS("17.1"),
+        .macOS(.v14),
+        .watchOS(.v9),
+        .tvOS(.v16)
     ],
     products: [
         .library(
@@ -13,8 +16,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../../Core/MoviesModels"),
-        .package(path: "../../Core/MoviesNetwork"),
+        .package(path: "../../Core/MoviesDomain"),
         .package(path: "../../Core/MoviesPersistence"),
         .package(path: "../../Core/MoviesDesignSystem"),
         .package(path: "../../Core/MoviesUtilities")
@@ -23,8 +25,7 @@ let package = Package(
         .target(
             name: "MoviesFavorites",
             dependencies: [
-                "MoviesModels",
-                "MoviesNetwork",
+                "MoviesDomain",
                 "MoviesPersistence",
                 "MoviesDesignSystem",
                 "MoviesUtilities"

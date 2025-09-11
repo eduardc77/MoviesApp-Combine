@@ -116,7 +116,6 @@ DerivedData/
 *.gcda
 
 # SwiftLint
-.swiftlint.yml
 .swiftlint.cache
 
 # SwiftFormat

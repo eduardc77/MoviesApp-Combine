@@ -1,3 +1,10 @@
+//
+//  HomeViewTests.swift
+//  MoviesHomeTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 @testable import MoviesHome
 

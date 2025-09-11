@@ -11,11 +11,12 @@
 		CE2396C32E71A7C80083CE21 /* MoviesDetails in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C22E71A7C80083CE21 /* MoviesDetails */; };
 		CE2396C52E71A7CC0083CE21 /* MoviesFavorites in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C42E71A7CC0083CE21 /* MoviesFavorites */; };
 		CE2396C72E71A7D00083CE21 /* MoviesHome in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C62E71A7D00083CE21 /* MoviesHome */; };
-		CE2396C92E71A7D30083CE21 /* MoviesModels in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C82E71A7D30083CE21 /* MoviesModels */; };
 		CE2396CB2E71A7D80083CE21 /* MoviesNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CA2E71A7D80083CE21 /* MoviesNetwork */; };
 		CE2396CD2E71A7DB0083CE21 /* MoviesPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CC2E71A7DB0083CE21 /* MoviesPersistence */; };
 		CE2396CF2E71A7E00083CE21 /* MoviesSearch in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CE2E71A7E00083CE21 /* MoviesSearch */; };
 		CE2396D12E71A7E30083CE21 /* MoviesUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396D02E71A7E30083CE21 /* MoviesUtilities */; };
+		CE2398832E71C5140083CE21 /* MoviesDomain in Frameworks */ = {isa = PBXBuildFile; productRef = CE2398822E71C5140083CE21 /* MoviesDomain */; };
+		CE47051A2E71E4CA00C978A3 /* MoviesNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CE4705192E71E4CA00C978A3 /* MoviesNavigation */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -90,9 +91,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				CE2396CB2E71A7D80083CE21 /* MoviesNetwork in Frameworks */,
+				CE47051A2E71E4CA00C978A3 /* MoviesNavigation in Frameworks */,
 				CE2396C32E71A7C80083CE21 /* MoviesDetails in Frameworks */,
-				CE2396C92E71A7D30083CE21 /* MoviesModels in Frameworks */,
 				CE2396C12E71A7C50083CE21 /* MoviesDesignSystem in Frameworks */,
+				CE2398832E71C5140083CE21 /* MoviesDomain in Frameworks */,
 				CE2396D12E71A7E30083CE21 /* MoviesUtilities in Frameworks */,
 				CE2396C72E71A7D00083CE21 /* MoviesHome in Frameworks */,
 				CE2396CF2E71A7E00083CE21 /* MoviesSearch in Frameworks */,
@@ -175,11 +177,12 @@
 				CE2396C22E71A7C80083CE21 /* MoviesDetails */,
 				CE2396C42E71A7CC0083CE21 /* MoviesFavorites */,
 				CE2396C62E71A7D00083CE21 /* MoviesHome */,
-				CE2396C82E71A7D30083CE21 /* MoviesModels */,
 				CE2396CA2E71A7D80083CE21 /* MoviesNetwork */,
 				CE2396CC2E71A7DB0083CE21 /* MoviesPersistence */,
 				CE2396CE2E71A7E00083CE21 /* MoviesSearch */,
 				CE2396D02E71A7E30083CE21 /* MoviesUtilities */,
+				CE2398822E71C5140083CE21 /* MoviesDomain */,
+				CE4705192E71E4CA00C978A3 /* MoviesNavigation */,
 			);
 			productName = Movies;
 			productReference = CE983B0B2E7174730063F22E /* Movies.app */;
@@ -317,7 +320,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]; then\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nCONFIG_PATH=\"$SRCROOT/../.swiftlint.yml\"\n\nif which swiftlint > /dev/null; then\n    #echo \"Auto-fixing SwiftLint violations where possible…\"\n    #swiftlint --fix --config \"$CONFIG_PATH\" || true\n\n    echo \"Then linting for remaining violations…\"\n    swiftlint lint --config \"$CONFIG_PATH\" || true\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]; then\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nCONFIG_PATH=\"$SRCROOT/../.swiftlint.yml\"\n\nif which swiftlint > /dev/null; then\n    echo \"Auto-fixing SwiftLint violations where possible…\"\n    swiftlint --fix --config \"$CONFIG_PATH\" || true\n\n    echo \"Then linting for remaining violations…\"\n    swiftlint lint --config \"$CONFIG_PATH\" || true\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -695,10 +698,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MoviesHome;
 		};
-		CE2396C82E71A7D30083CE21 /* MoviesModels */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = MoviesModels;
-		};
 		CE2396CA2E71A7D80083CE21 /* MoviesNetwork */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MoviesNetwork;
@@ -714,6 +713,14 @@
 		CE2396D02E71A7E30083CE21 /* MoviesUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MoviesUtilities;
+		};
+		CE2398822E71C5140083CE21 /* MoviesDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesDomain;
+		};
+		CE4705192E71E4CA00C978A3 /* MoviesNavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesNavigation;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
