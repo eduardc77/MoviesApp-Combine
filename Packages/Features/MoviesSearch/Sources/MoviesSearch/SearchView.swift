@@ -45,7 +45,7 @@ public struct SearchView: View {
                              onTap: { item in appRouter.navigateToMovieDetails(movieId: item.id) },
                              onFavoriteToggle: { item in viewModel.toggleFavorite(item.id) },
                              isFavorite: { item in viewModel.isFavorite(item.id) },
-                             onItemAppear: { item in viewModel.loadNextIfNeeded(currentItem: item) },
+                             onLoadNext: { viewModel.search(reset: false, trigger: .submit) },
                              showLoadingOverlay: viewModel.isLoadingNext)
             }
         }
@@ -57,7 +57,7 @@ public struct SearchView: View {
                     placement: .navigationBarDrawer(displayMode: .always),
                     prompt: "Search Movies")
         .onSubmit(of: .search) {
-            viewModel.search(reset: true)
+            viewModel.search(reset: true, trigger: .submit)
         }
         .searchPresentationToolbarBehavior(.avoidHidingContent)
         #endif

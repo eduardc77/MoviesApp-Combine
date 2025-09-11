@@ -12,7 +12,7 @@ public struct CardGridView<Item: CardDisplayable>: View {
     private let onTap: (Item) -> Void
     private let onFavoriteToggle: (Item) -> Void
     private let isFavorite: (Item) -> Bool
-    private let onItemAppear: ((Item) -> Void)?
+    private let onLoadNext: (() -> Void)?
     private let showLoadingOverlay: Bool
 
     private let columns: [GridItem] = [
@@ -24,14 +24,14 @@ public struct CardGridView<Item: CardDisplayable>: View {
         onTap: @escaping (Item) -> Void,
         onFavoriteToggle: @escaping (Item) -> Void,
         isFavorite: @escaping (Item) -> Bool,
-        onItemAppear: ((Item) -> Void)? = nil,
+        onLoadNext: (() -> Void)? = nil,
         showLoadingOverlay: Bool = false
     ) {
         self.items = items
         self.onTap = onTap
         self.onFavoriteToggle = onFavoriteToggle
         self.isFavorite = isFavorite
-        self.onItemAppear = onItemAppear
+        self.onLoadNext = onLoadNext
         self.showLoadingOverlay = showLoadingOverlay
     }
 
@@ -45,28 +45,40 @@ public struct CardGridView<Item: CardDisplayable>: View {
                         onFavoriteToggle: { onFavoriteToggle(item) },
                         isFavorite: { isFavorite(item) }
                     )
-                    .onAppear { onItemAppear?(item) }
+                    .onAppear {
+                        if let index = items.firstIndex(where: { $0.id == item.id }),
+                           index >= items.count - 3 {
+                            onLoadNext?()
+                        }
+                    }
                 }
             }
             .padding(10)
+
+            if showLoadingOverlay {
+                footerLoadingIndicator
+            }
         }
 #if canImport(UIKit)
         .background(Color(.systemGray4))
 #else
         .background(Color.gray.opacity(0.2))
 #endif
+    }
 
-        if showLoadingOverlay {
+    var footerLoadingIndicator: some View {
+        HStack {
+            Spacer()
             ProgressView()
-                .progressViewStyle(.circular)
-                .tint(.secondary)
-                .padding(12)
-                .background(.ultraThinMaterial, in: Circle())
-                .padding(12)
+                .scaleEffect(0.8)
+            Text(.DesignSystemL10n.loadingMore)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
         }
+        .padding(.vertical, 8)
     }
 }
-
 // Helper to access id property without requiring Identifiable conformance
 private extension CardDisplayable {
     var idKey: Int { id }
