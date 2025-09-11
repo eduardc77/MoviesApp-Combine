@@ -6,12 +6,36 @@
 //
 
 import SwiftUI
+import MoviesDesignSystem
+import MoviesUtilities
+import MoviesNavigation
 
 @main
 struct MoviesApp: App {
+    /// Main dependency injection container
+    private let appEnvironment: AppEnvironment
+    /// Main app router for navigation
+    private let appRouter: AppRouter
+
+    init() {
+        // Configure Kingfisher
+        KingfisherConfig.configure()
+        // Configure global navigation/tab and search appearance
+        NavigationAppearance.configure()
+        SearchBarAppearance.configure()
+
+        self.appEnvironment = AppEnvironment()
+
+        // Initialize app router
+        self.appRouter = AppRouter()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(appRouter)
+                .environment(appEnvironment)
+                .environment(appEnvironment.favoritesStore)
         }
     }
 }

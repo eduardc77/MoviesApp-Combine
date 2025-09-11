@@ -6,6 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CE2396C12E71A7C50083CE21 /* MoviesDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C02E71A7C50083CE21 /* MoviesDesignSystem */; };
+		CE2396C32E71A7C80083CE21 /* MoviesDetails in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C22E71A7C80083CE21 /* MoviesDetails */; };
+		CE2396C52E71A7CC0083CE21 /* MoviesFavorites in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C42E71A7CC0083CE21 /* MoviesFavorites */; };
+		CE2396C72E71A7D00083CE21 /* MoviesHome in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396C62E71A7D00083CE21 /* MoviesHome */; };
+		CE2396CB2E71A7D80083CE21 /* MoviesNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CA2E71A7D80083CE21 /* MoviesNetwork */; };
+		CE2396CD2E71A7DB0083CE21 /* MoviesPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CC2E71A7DB0083CE21 /* MoviesPersistence */; };
+		CE2396CF2E71A7E00083CE21 /* MoviesSearch in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CE2E71A7E00083CE21 /* MoviesSearch */; };
+		CE2396D12E71A7E30083CE21 /* MoviesUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396D02E71A7E30083CE21 /* MoviesUtilities */; };
+		CE2398832E71C5140083CE21 /* MoviesDomain in Frameworks */ = {isa = PBXBuildFile; productRef = CE2398822E71C5140083CE21 /* MoviesDomain */; };
+		CE47051A2E71E4CA00C978A3 /* MoviesNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CE4705192E71E4CA00C978A3 /* MoviesNavigation */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		CE983B1D2E7174760063F22E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +42,34 @@
 		CE983B262E7174760063F22E /* MoviesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MoviesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CE2395992E719FD90083CE21 /* Exceptions for "Movies" folder in "Movies" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = CE983B0A2E7174730063F22E /* Movies */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		CE23966F2E71A31B0083CE21 /* Core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = Core;
+			path = ../Packages/Core;
+			sourceTree = SOURCE_ROOT;
+		};
+		CE2396742E71A31B0083CE21 /* Features */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			name = Features;
+			path = ../Packages/Features;
+			sourceTree = SOURCE_ROOT;
+		};
 		CE983B0D2E7174730063F22E /* Movies */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CE2395992E719FD90083CE21 /* Exceptions for "Movies" folder in "Movies" target */,
+			);
 			path = Movies;
 			sourceTree = "<group>";
 		};
@@ -52,6 +90,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CE2396CB2E71A7D80083CE21 /* MoviesNetwork in Frameworks */,
+				CE47051A2E71E4CA00C978A3 /* MoviesNavigation in Frameworks */,
+				CE2396C32E71A7C80083CE21 /* MoviesDetails in Frameworks */,
+				CE2396C12E71A7C50083CE21 /* MoviesDesignSystem in Frameworks */,
+				CE2398832E71C5140083CE21 /* MoviesDomain in Frameworks */,
+				CE2396D12E71A7E30083CE21 /* MoviesUtilities in Frameworks */,
+				CE2396C72E71A7D00083CE21 /* MoviesHome in Frameworks */,
+				CE2396CF2E71A7E00083CE21 /* MoviesSearch in Frameworks */,
+				CE2396C52E71A7CC0083CE21 /* MoviesFavorites in Frameworks */,
+				CE2396CD2E71A7DB0083CE21 /* MoviesPersistence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,6 +120,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE2396BF2E71A7C50083CE21 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		CE983B022E7174730063F22E = {
 			isa = PBXGroup;
 			children = (
@@ -79,6 +134,9 @@
 				CE983B1F2E7174760063F22E /* MoviesTests */,
 				CE983B292E7174760063F22E /* MoviesUITests */,
 				CE983B0C2E7174730063F22E /* Products */,
+				CE23966F2E71A31B0083CE21 /* Core */,
+				CE2396742E71A31B0083CE21 /* Features */,
+				CE2396BF2E71A7C50083CE21 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,10 +166,22 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				CE23966F2E71A31B0083CE21 /* Core */,
+				CE2396742E71A31B0083CE21 /* Features */,
 				CE983B0D2E7174730063F22E /* Movies */,
 			);
 			name = Movies;
 			packageProductDependencies = (
+				CE2396C02E71A7C50083CE21 /* MoviesDesignSystem */,
+				CE2396C22E71A7C80083CE21 /* MoviesDetails */,
+				CE2396C42E71A7CC0083CE21 /* MoviesFavorites */,
+				CE2396C62E71A7D00083CE21 /* MoviesHome */,
+				CE2396CA2E71A7D80083CE21 /* MoviesNetwork */,
+				CE2396CC2E71A7DB0083CE21 /* MoviesPersistence */,
+				CE2396CE2E71A7E00083CE21 /* MoviesSearch */,
+				CE2396D02E71A7E30083CE21 /* MoviesUtilities */,
+				CE2398822E71C5140083CE21 /* MoviesDomain */,
+				CE4705192E71E4CA00C978A3 /* MoviesNavigation */,
 			);
 			productName = Movies;
 			productReference = CE983B0B2E7174730063F22E /* Movies.app */;
@@ -392,8 +462,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Movies/Preview Content\"";
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Movies/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -415,7 +487,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
@@ -430,8 +502,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Movies/Preview Content\"";
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Movies/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -453,7 +527,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.2;
 			};
@@ -585,6 +659,49 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CE2396C02E71A7C50083CE21 /* MoviesDesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesDesignSystem;
+		};
+		CE2396C22E71A7C80083CE21 /* MoviesDetails */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesDetails;
+		};
+		CE2396C42E71A7CC0083CE21 /* MoviesFavorites */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesFavorites;
+		};
+		CE2396C62E71A7D00083CE21 /* MoviesHome */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesHome;
+		};
+		CE2396CA2E71A7D80083CE21 /* MoviesNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesNetwork;
+		};
+		CE2396CC2E71A7DB0083CE21 /* MoviesPersistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesPersistence;
+		};
+		CE2396CE2E71A7E00083CE21 /* MoviesSearch */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesSearch;
+		};
+		CE2396D02E71A7E30083CE21 /* MoviesUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesUtilities;
+		};
+		CE2398822E71C5140083CE21 /* MoviesDomain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesDomain;
+		};
+		CE4705192E71E4CA00C978A3 /* MoviesNavigation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MoviesNavigation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CE983B032E7174730063F22E /* Project object */;
 }
