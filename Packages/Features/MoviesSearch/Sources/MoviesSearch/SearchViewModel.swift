@@ -20,10 +20,17 @@ public final class SearchViewModel: ObservableObject {
 
     private var page = 1
     private var totalPages = 1
+    private var seenIds = Set<Int>()
+    private var currentRequest: AnyCancellable?
 
     private let repository: MovieRepositoryProtocol
     private let favoritesStore: FavoritesStore
     private var cancellables = Set<AnyCancellable>()
+
+    public enum Trigger {
+        case debounce
+        case submit
+    }
 
     var isQueryShort: Bool {
         query.trimmingCharacters(in: .whitespacesAndNewlines).count < 3
@@ -32,7 +39,7 @@ public final class SearchViewModel: ObservableObject {
     public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStore) {
         self.repository = repository
         self.favoritesStore = favoritesStore
-        // Debounced type-ahead with guardrails (>=3 chars, 700ms pause)
+        // Debounced type-ahead with guardrails (>=3 chars)
         $query
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .removeDuplicates()
@@ -42,47 +49,58 @@ public final class SearchViewModel: ObservableObject {
                 if trimmed.isEmpty {
                     self.reset()
                 } else if trimmed.count >= 3 {
-                    self.query = trimmed
-                    self.search(reset: true)
+                    self.search(reset: true, trigger: .debounce)
                 }
             }
             .store(in: &cancellables)
     }
 
-    public func search(reset: Bool = true) {
-        guard !query.isEmpty else {
+    public func search(reset: Bool = true, trigger: Trigger) {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
             items = []
             return
         }
+        if trigger == .debounce {
+            guard trimmed.count >= 3 else { return }
+        }
         let next = reset ? 1 : page + 1
-        if reset { isLoading = true; error = nil } else {
+        if reset { isLoading = true; error = nil; seenIds.removeAll(); items.removeAll() } else {
             guard !isLoadingNext, next <= totalPages else { return }
             isLoadingNext = true
         }
 
-        repository.searchMovies(query: query, page: next)
+        #if DEBUG
+        print("[SearchVM] search(reset: \(reset)) q=\(trimmed) next=\(next) current page=\(page)/\(totalPages) isLoadingNext=\(isLoadingNext) trigger=\(trigger)")
+        #endif
+        currentRequest?.cancel()
+        currentRequest = repository.searchMovies(query: trimmed, page: next)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] completion in
                 guard let self else { return }
                 self.isLoading = false
                 self.isLoadingNext = false
+                self.currentRequest = nil
                 if case .failure(let error) = completion { self.error = error }
             }, receiveValue: { [weak self] page in
                 guard let self else { return }
                 self.page = page.page
                 self.totalPages = page.totalPages
-                let combined = (next == 1) ? page.items : self.items + page.items
+                let newUnique = page.items.filter { !self.seenIds.contains($0.id) }
+                newUnique.forEach { self.seenIds.insert($0.id) }
+                let combined = (next == 1) ? newUnique : self.items + newUnique
                 self.items = self.applySortIfNeeded(combined)
             })
-            .store(in: &cancellables)
     }
 
     public func loadNextIfNeeded(currentItem: Movie?) {
         guard let id = currentItem?.id,
               let idx = items.firstIndex(where: { $0.id == id }),
               idx >= max(items.count - 6, 0) else { return }
-        search(reset: false)
+        search(reset: false, trigger: .submit)
     }
+
+    public var canLoadMore: Bool { page < totalPages }
 
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
     public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }

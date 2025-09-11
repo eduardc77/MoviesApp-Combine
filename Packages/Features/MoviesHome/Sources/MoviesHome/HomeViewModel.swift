@@ -21,10 +21,12 @@ public final class HomeViewModel {
 
     private var page = 1
     private var totalPages = 1
+    private var seenIds = Set<Int>()
 
     private let repository: MovieRepositoryProtocol
     private let favoritesStore: FavoritesStore
     private var cancellables = Set<AnyCancellable>()
+    private var currentRequest: AnyCancellable?
 
     public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStore) {
         self.repository = repository
@@ -36,6 +38,8 @@ public final class HomeViewModel {
         if reset {
             isLoading = true
             error = nil
+            seenIds.removeAll()
+            items.removeAll()
         } else {
             guard !isLoadingNext, next <= totalPages else { return }
             isLoadingNext = true
@@ -52,7 +56,10 @@ public final class HomeViewModel {
                 guard let self else { return }
                 self.page = page.page
                 self.totalPages = page.totalPages
-                let combined = (next == 1) ? page.items : self.items + page.items
+                // Idempotent append by id to guarantee stable identity across pages
+                let newUnique = page.items.filter { !self.seenIds.contains($0.id) }
+                newUnique.forEach { self.seenIds.insert($0.id) }
+                let combined = (next == 1) ? newUnique : self.items + newUnique
                 self.items = self.applySortIfNeeded(combined)
             })
             .store(in: &cancellables)

@@ -52,7 +52,9 @@ public struct HomeView: View {
                             onTap: { appRouter.navigateToMovieDetails(movieId: $0.id) },
                             onFavoriteToggle: { viewModel.toggleFavorite($0.id) },
                             isFavorite: { viewModel.isFavorite($0.id) },
-                            onItemAppear: { viewModel.loadNextIfNeeded(currentItem: $0) },
+                            onLoadNext: {
+                                viewModel.load(reset: false)
+                            },
                             showLoadingOverlay: viewModel.isLoadingNext
                         )
                         .tag(category)
