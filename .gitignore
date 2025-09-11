@@ -89,11 +89,13 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Swift Package Manager
+# Swift Package Manager (keep sources tracked, ignore build artifacts)
 .swiftpm/
-Packages/
-Package.pins
-Package.resolved
+.build/
+**/.build/
+**/.swiftpm/
+# Lockfile: commit for apps; un-comment to ignore for libraries
+# Package.resolved
 
 # Xcode
 *.swp
