@@ -15,6 +15,8 @@ public struct CardGridView<Item: CardDisplayable>: View {
     private let onLoadNext: (() -> Void)?
     private let showLoadingOverlay: Bool
 
+    @State private var hasTriggeredLoadNext = false
+
     private let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 140, maximum: 220), spacing: 8, alignment: .top)
     ]
@@ -46,8 +48,9 @@ public struct CardGridView<Item: CardDisplayable>: View {
                         isFavorite: { isFavorite(item) }
                     )
                     .onAppear {
-                        if let index = items.firstIndex(where: { $0.id == item.id }),
-                           index >= items.count - 3 {
+                        if let index = items.firstIndex(where: { $0.idKey == item.idKey }),
+                           index >= items.count - 3 && !hasTriggeredLoadNext {
+                            hasTriggeredLoadNext = true
                             onLoadNext?()
                         }
                     }
@@ -58,6 +61,9 @@ public struct CardGridView<Item: CardDisplayable>: View {
             if showLoadingOverlay {
                 footerLoadingIndicator
             }
+        }
+        .onChange(of: items.count) { _, _ in
+            hasTriggeredLoadNext = false // Reset when items count changes
         }
 #if canImport(UIKit)
         .background(Color(.systemGray4))

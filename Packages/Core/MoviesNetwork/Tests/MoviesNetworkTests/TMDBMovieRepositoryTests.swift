@@ -5,6 +5,7 @@ import Combine
 
 private final class RemoteDataSourceMock: TMDBRemoteDataSourceProtocol, @unchecked Sendable {
     var fetchMoviesHandler: ((MovieType, Int) -> AnyPublisher<MoviePage, Error>)?
+    var fetchMoviesWithSortHandler: ((MovieType, Int, String?) -> AnyPublisher<MoviePage, Error>)?
     var searchMoviesHandler: ((String, Int) -> AnyPublisher<MoviePage, Error>)?
     var detailsHandler: ((Int) -> AnyPublisher<MovieDetails, Error>)?
 
@@ -15,6 +16,11 @@ private final class RemoteDataSourceMock: TMDBRemoteDataSourceProtocol, @uncheck
     func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> {
         guard let h = fetchMoviesHandler else { fatalError("no handler") }
         return h(type, page)
+    }
+
+    func fetchMovies(type: MovieType, page: Int, sortBy: String?) -> AnyPublisher<MoviePage, Error> {
+        guard let h = fetchMoviesWithSortHandler else { fatalError("no handler") }
+        return h(type, page, sortBy)
     }
 
     func searchMovies(query: String) -> AnyPublisher<[Movie], Error> {

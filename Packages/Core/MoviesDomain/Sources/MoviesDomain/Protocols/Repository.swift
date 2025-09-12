@@ -25,6 +25,8 @@ public protocol MovieRepositoryProtocol: Sendable {
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error>
     /// Fetches movies of a specific type for a page
     func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error>
+    /// Fetches movies of a specific type for a page with server-side sorting
+    func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error>
 
     /// Searches for movies based on a query string
     func searchMovies(query: String) -> AnyPublisher<[Movie], Error>

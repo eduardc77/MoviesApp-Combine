@@ -39,9 +39,21 @@ public struct HomeView: View {
             .background(Color.black)
 
             if let error = viewModel.error {
-                Text("Error: \(error.localizedDescription)")
-                    .foregroundColor(.red)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 16) {
+                    Text("Loading Error")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                    Text(error.localizedDescription)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    Button("Try Again") {
+                        viewModel.load(reset: true)
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if viewModel.isLoading && viewModel.items.isEmpty {
                 LoadingView()
             } else {
@@ -70,7 +82,10 @@ public struct HomeView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .movieSortToolbar(isPresented: $showingSortSheet) { order in
+        .movieSortToolbar(
+            isPresented: $showingSortSheet,
+            currentSortOrder: viewModel.sortOrder
+        ) { order in
             viewModel.setSortOrder(order)
         }
         .onAppear {

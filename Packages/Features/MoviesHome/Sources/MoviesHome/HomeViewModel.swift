@@ -35,34 +35,95 @@ public final class HomeViewModel {
 
     public func load(reset: Bool = true) {
         let next = reset ? 1 : page + 1
+
         if reset {
-            isLoading = true
-            error = nil
-            seenIds.removeAll()
-            items.removeAll()
+            performFullReset()
         } else {
             guard !isLoadingNext, next <= totalPages else { return }
             isLoadingNext = true
         }
 
-        repository.fetchMovies(type: category, page: next)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self else { return }
-                self.isLoading = false
-                self.isLoadingNext = false
-                if case .failure(let err) = completion { self.error = err }
-            }, receiveValue: { [weak self] page in
-                guard let self else { return }
-                self.page = page.page
-                self.totalPages = page.totalPages
-                // Idempotent append by id to guarantee stable identity across pages
-                let newUnique = page.items.filter { !self.seenIds.contains($0.id) }
-                newUnique.forEach { self.seenIds.insert($0.id) }
-                let combined = (next == 1) ? newUnique : self.items + newUnique
-                self.items = self.applySortIfNeeded(combined)
-            })
-            .store(in: &cancellables)
+        // Always use server-side sorting when sortOrder is set
+        if let sortOrder = sortOrder {
+            // Use server-side sorting via discover endpoint
+            repository.fetchMovies(type: category, page: next, sortBy: sortOrder)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { [weak self] completion in
+                    guard let self else { return }
+                    self.isLoading = false
+                    self.isLoadingNext = false
+                    if case .failure(let err) = completion { self.error = err }
+                }, receiveValue: { [weak self] page in
+                    guard let self else { return }
+                    self.page = page.page
+                    self.totalPages = page.totalPages
+
+                    // Add all movies from this page, then deduplicate (server sorting already applied)
+                    let allMovies = self.items + page.items
+
+                    // Deduplicate by ID while preserving order stability
+                    var uniqueMovies: [Movie] = []
+                    var seenInThisBatch = Set<Int>()
+
+                    for movie in allMovies {
+                        if !seenInThisBatch.contains(movie.id) {
+                            uniqueMovies.append(movie)
+                            seenInThisBatch.insert(movie.id)
+                        }
+                    }
+
+                    self.items = uniqueMovies
+
+                    // Update seenIds for future API call prevention
+                    page.items.forEach { self.seenIds.insert($0.id) }
+                })
+                .store(in: &cancellables)
+        } else {
+            // No sorting: Use traditional endpoints but could still benefit from server-side default sorting
+            repository.fetchMovies(type: category, page: next)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveCompletion: { [weak self] completion in
+                    guard let self else { return }
+                    self.isLoading = false
+                    self.isLoadingNext = false
+                    if case .failure(let err) = completion { self.error = err }
+                    }, receiveValue: { [weak self] page in
+                        guard let self else { return }
+                        self.page = page.page
+                        self.totalPages = page.totalPages
+
+                        // Add all movies from this page, then deduplicate
+                        let allMovies = self.items + page.items
+
+                        // Deduplicate by ID while preserving order stability
+                        var uniqueMovies: [Movie] = []
+                        var seenInThisBatch = Set<Int>()
+
+                        for movie in allMovies {
+                            if !seenInThisBatch.contains(movie.id) {
+                                uniqueMovies.append(movie)
+                                seenInThisBatch.insert(movie.id)
+                            }
+                        }
+
+                        self.items = uniqueMovies
+
+                        // Update seenIds for future API call prevention
+                        page.items.forEach { self.seenIds.insert($0.id) }
+                    })
+                .store(in: &cancellables)
+        }
+    }
+
+    /// Determines if server-side sorting is supported for the current category
+    public var supportsServerSideSorting: Bool {
+        supportsServerSideSorting(for: category)
+    }
+
+    /// Determines if server-side sorting is supported for the given movie type
+    private func supportsServerSideSorting(for type: MovieType) -> Bool {
+        // All movie types support server-side sorting via /discover/movie
+        return true
     }
 
     public func loadNextIfNeeded(currentItem: Movie?) {
@@ -76,8 +137,42 @@ public final class HomeViewModel {
     public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
 
     public func setSortOrder(_ order: MovieSortOrder) {
+        // Store the previous sort order to detect changes
         sortOrder = order
-        items = applySortIfNeeded(items)
+
+        // Always reset and reload when sorting changes (including when sorting is first applied)
+        resetPagination()
+
+        load(reset: true)
+    }
+
+    public func clearSortOrder() {
+        if sortOrder != nil {
+            sortOrder = nil
+            resetPagination()
+            load(reset: true)
+        }
+    }
+
+    private func resetPagination() {
+        page = 1
+        totalPages = 1
+        seenIds.removeAll()
+        items.removeAll()
+        isLoading = false
+        isLoadingNext = false
+        error = nil
+        // Don't reset scrollToTopTrigger here as it should be controlled explicitly
+    }
+
+    /// Performs a full state reset for fresh loads
+    private func performFullReset() {
+        isLoading = true
+        error = nil
+        seenIds.removeAll()
+        items.removeAll()
+        page = 1  // Reset pagination counters
+        totalPages = 1
     }
 
     private func applySortIfNeeded(_ list: [Movie]) -> [Movie] {

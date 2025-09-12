@@ -15,12 +15,10 @@ public final class SearchViewModel: ObservableObject {
     @Published public var isLoading = false
     @Published public var isLoadingNext = false
     @Published public var error: Error?
-    @Published public var sortOrder: MovieSortOrder?
     @Published public var query: String = ""
 
     private var page = 1
     private var totalPages = 1
-    private var seenIds = Set<Int>()
     private var currentRequest: AnyCancellable?
 
     private let repository: MovieRepositoryProtocol
@@ -46,6 +44,7 @@ public final class SearchViewModel: ObservableObject {
             .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
             .sink { [weak self] trimmed in
                 guard let self else { return }
+
                 if trimmed.isEmpty {
                     self.reset()
                 } else if trimmed.count >= 3 {
@@ -65,14 +64,13 @@ public final class SearchViewModel: ObservableObject {
             guard trimmed.count >= 3 else { return }
         }
         let next = reset ? 1 : page + 1
-        if reset { isLoading = true; error = nil; seenIds.removeAll(); items.removeAll() } else {
+        if reset {
+            performFullReset()
+        } else {
             guard !isLoadingNext, next <= totalPages else { return }
             isLoadingNext = true
         }
 
-        #if DEBUG
-        print("[SearchVM] search(reset: \(reset)) q=\(trimmed) next=\(next) current page=\(page)/\(totalPages) isLoadingNext=\(isLoadingNext) trigger=\(trigger)")
-        #endif
         currentRequest?.cancel()
         currentRequest = repository.searchMovies(query: trimmed, page: next)
             .receive(on: DispatchQueue.main)
@@ -86,10 +84,9 @@ public final class SearchViewModel: ObservableObject {
                 guard let self else { return }
                 self.page = page.page
                 self.totalPages = page.totalPages
-                let newUnique = page.items.filter { !self.seenIds.contains($0.id) }
-                newUnique.forEach { self.seenIds.insert($0.id) }
-                let combined = (next == 1) ? newUnique : self.items + newUnique
-                self.items = self.applySortIfNeeded(combined)
+
+                // Simply append the new movies
+                self.items.append(contentsOf: page.items)
             })
     }
 
@@ -104,15 +101,24 @@ public final class SearchViewModel: ObservableObject {
 
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
     public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
-    public func setSortOrder(_ order: MovieSortOrder) { sortOrder = order; items = applySortIfNeeded(items) }
 
-    private func applySortIfNeeded(_ list: [Movie]) -> [Movie] {
-        guard let order = sortOrder else { return list }
-        return list.sorted(by: order)
+
+    /// Performs a full state reset for fresh searches
+    private func performFullReset() {
+        // Full reset: clear everything and start fresh
+        isLoading = true
+        error = nil
+        items.removeAll()
+        page = 1  // Reset pagination counters
+        totalPages = 1
     }
 
     private func reset() {
-        items = []
+        // Cancel any in-flight requests to prevent memory leaks
+        currentRequest?.cancel()
+        currentRequest = nil
+
+        items.removeAll()
         page = 1
         totalPages = 1
         isLoading = false
