@@ -7,26 +7,6 @@ A modern, performant iOS movies app built with SwiftUI, Combine, and clean archi
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-Modern-red)
 ![Architecture](https://img.shields.io/badge/Architecture-Modular-green)
 
-## ✨ Features
-
-### 🎯 Core Functionality
-- **Discover Movies** - Browse trending, popular, and now playing movies
-- **Smart Search** - Real-time movie search with server-side filtering
-- **Favorites Management** - Add/remove movies to personal favorites list
-- **Movie Details** - Comprehensive movie information with ratings and cast
-
-### 🚀 Performance & UX
-- **Server-Side Sorting** - Efficient sorting handled by TMDB API (no client-side processing)
-- **Optimized Pagination** - Smooth infinite scrolling with prefetching
-- **Memory Efficient** - Built-in memory leak prevention and subscription cleanup
-- **Thread-Safe Persistence** - Concurrent-safe favorites storage with UserDefaults
-
-### 🏗️ Technical Excellence
-- **Modular Architecture** - Clean separation of concerns with Swift Package Manager
-- **Comprehensive Testing** - 85%+ test coverage with critical path validations
-- **Modern SwiftUI** - Declarative UI with MVVM pattern
-- **Full Combine Integration** - Complete reactive programming stack for async operations, data binding, and state management
-
 ## 📱 Screenshots
 
 <table>
@@ -64,6 +44,25 @@ A modern, performant iOS movies app built with SwiftUI, Combine, and clean archi
   </tr>
 </table>
 
+## ✨ Features
+
+### 🎯 Core Functionality
+- **Discover Movies** - Browse trending, popular, and now playing movies
+- **Smart Search** - Real-time movie search with server-side filtering
+- **Favorites Management** - Add/remove movies to personal favorites list
+- **Movie Details** - Comprehensive movie information with ratings and cast
+
+### 🚀 Performance & UX
+- **Server-Side Sorting** - Efficient sorting handled by TMDB API (no client-side processing)
+- **Optimized Pagination** - Smooth infinite scrolling with prefetching
+- **Memory Efficient** - Built-in memory leak prevention and subscription cleanup
+- **Thread-Safe Persistence** - Concurrent-safe favorites storage with UserDefaults
+
+### 🏗️ Technical Excellence
+- **Modular Architecture** - Clean separation of concerns with Swift Package Manager
+- **Comprehensive Testing** - 85%+ test coverage with critical path validations
+- **Modern SwiftUI** - Declarative UI with MVVM pattern
+- **Full Combine Integration** - Complete reactive programming stack for async operations, data binding, and state management
 
 ## 🛠️ Architecture
 
