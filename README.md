@@ -29,13 +29,41 @@ A modern, performant iOS movies app built with SwiftUI, Combine, and clean archi
 
 ## 📱 Screenshots
 
-<img src="screenshots/home-screen.png" width="200" alt="Home screen - Movie discovery with server-side sorting">
-<img src="screenshots/home-screen-dark.png" width="200" alt="Home screen - Dark Mode">
-<img src="screenshots/search-screen.png" width="200" alt="Search screen - Smart movie search with real-time results">
-<img src="screenshots/movie-details.png" width="200" alt="Movie details - Comprehensive movie information and ratings">
-<img src="screenshots/movie-details-dark.png" width="200" alt="Movie details - Dark Mode">
-<img src="screenshots/favorites-screen.png" width="200" alt="Favorites screen - Personal movie collection management">
-<img src="screenshots/home-screen-iPad.png" width="200" alt="Home screen - iPad">
+<table>
+  <tr>
+    <td><img src="screenshots/home-screen.png" width="180" alt="Home screen - Movie discovery with server-side sorting"></td>
+    <td><img src="screenshots/home-screen-dark.png" width="180" alt="Home screen - Dark Mode"></td>
+    <td><img src="screenshots/search-screen.png" width="180" alt="Search screen - Smart movie search with real-time results"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Home Screen</b><br/>Light Mode</td>
+    <td align="center"><b>Home Screen</b><br/>Dark Mode</td>
+    <td align="center"><b>Smart Search</b><br/>Real-time results</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="screenshots/movie-details.png" width="180" alt="Movie details - Comprehensive movie information and ratings"></td>
+    <td><img src="screenshots/movie-details-dark.png" width="180" alt="Movie details - Dark Mode"></td>
+    <td><img src="screenshots/favorites-screen.png" width="180" alt="Favorites screen - Personal movie collection management"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Movie Details</b><br/>Light Mode</td>
+    <td align="center"><b>Movie Details</b><br/>Dark Mode</td>
+    <td align="center"><b>Favorites</b><br/>Collection management</td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="screenshots/home-screen-iPad.png" width="250" alt="Home screen - iPad"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>iPad Experience</b><br/>Optimized tablet layout</td>
+  </tr>
+</table>
+
 
 ## 🛠️ Architecture
 
