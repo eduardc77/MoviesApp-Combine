@@ -14,7 +14,6 @@ import MoviesDesignSystem
 public struct SearchView: View {
     @Environment(AppRouter.self) private var appRouter
     @StateObject private var viewModel: SearchViewModel
-    @State private var showingSortSheet = false
 
     public init(repository: MovieRepositoryProtocol, favoriteStore: FavoritesStore) {
         _viewModel = StateObject(wrappedValue: SearchViewModel(repository: repository, favoritesStore: favoriteStore))
@@ -22,7 +21,25 @@ public struct SearchView: View {
 
     public var body: some View {
         VStack(spacing: 0) {
-            if viewModel.isLoading {
+            if let error = viewModel.error {
+                VStack(spacing: 16) {
+                    Text("Search Error")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                    Text(error.localizedDescription)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    Button("Try Again") {
+                        if !viewModel.query.isEmpty {
+                            viewModel.search(reset: true, trigger: .submit)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if viewModel.isLoading {
                 LoadingView()
             } else if viewModel.items.isEmpty {
 
@@ -59,10 +76,6 @@ public struct SearchView: View {
         .onSubmit(of: .search) {
             viewModel.search(reset: true, trigger: .submit)
         }
-        .searchPresentationToolbarBehavior(.avoidHidingContent)
         #endif
-        .movieSortToolbar(isPresented: $showingSortSheet) { order in
-            viewModel.setSortOrder(order)
-        }
     }
 }

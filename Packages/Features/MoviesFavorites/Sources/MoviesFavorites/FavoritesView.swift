@@ -23,7 +23,28 @@ public struct FavoritesView: View {
 
     public var body: some View {
         Group {
-            if viewModel.isLoading {
+            if let error = viewModel.error {
+                VStack(spacing: 16) {
+                    Text("Favorites Error")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                    Text(error.localizedDescription)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    Button("Try Again") {
+                        viewModel.reload()
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                #if canImport(UIKit)
+                .background(Color(.systemGray6))
+                #else
+                .background(Color.gray.opacity(0.2))
+                #endif
+            } else if viewModel.isLoading {
                 LoadingView()
                 #if canImport(UIKit)
                 .background(Color(.systemGray6))
@@ -53,7 +74,10 @@ public struct FavoritesView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .movieSortToolbar(isPresented: $showingSortSheet) { order in
+        .movieSortToolbar(
+            isPresented: $showingSortSheet,
+            currentSortOrder: viewModel.sortOrder
+        ) { order in
             viewModel.setSortOrder(order)
         }
         .onAppear { viewModel.reload() }

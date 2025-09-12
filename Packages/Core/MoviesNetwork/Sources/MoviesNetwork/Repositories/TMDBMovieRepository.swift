@@ -25,6 +25,10 @@ public final class TMDBMovieRepository: MovieRepositoryProtocol {
         return remoteDataSource.fetchMovies(type: type, page: page)
     }
 
+    public func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error> {
+        return remoteDataSource.fetchMovies(type: type, page: page, sortBy: sortBy?.tmdbSortValue)
+    }
+
     public func searchMovies(query: String) -> AnyPublisher<[Movie], Error> {
         return remoteDataSource.searchMovies(query: query)
     }

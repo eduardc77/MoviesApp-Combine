@@ -1,3 +1,10 @@
+//
+//  MoviesUtilitiesTests.swift
+//  MoviesUtilities
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 @testable import MoviesUtilities
 
@@ -22,9 +29,3 @@ final class MoviesUtilitiesTests: XCTestCase {
         XCTAssertEqual(url, URL(string: "https://image.tmdb.org/t/p/w780/backdrop.jpg"))
     }
 }
-//
-//  MoviesUtilitiesTests.swift
-//  MoviesUtilities
-//
-//  Created by User on 9/10/25.
-//

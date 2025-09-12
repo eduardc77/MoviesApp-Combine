@@ -25,6 +25,16 @@ public enum MovieSortOrder: CaseIterable, Identifiable, Sendable {
         case .releaseDateDescending: return .DomainL10n.releaseDateDescending
         }
     }
+
+    /// TMDB server-side sort parameter value for endpoints that support it
+    public var tmdbSortValue: String {
+        switch self {
+        case .ratingAscending: return "vote_average.asc"
+        case .ratingDescending: return "vote_average.desc"
+        case .releaseDateAscending: return "release_date.asc"
+        case .releaseDateDescending: return "release_date.desc"
+        }
+    }
 }
 
 public extension Array where Element == Movie {

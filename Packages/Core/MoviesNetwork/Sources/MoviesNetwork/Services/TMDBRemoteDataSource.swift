@@ -13,6 +13,7 @@ import MoviesDomain
 public protocol TMDBRemoteDataSourceProtocol: Sendable {
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error>
     func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error>
+    func fetchMovies(type: MovieType, page: Int, sortBy: String?) -> AnyPublisher<MoviePage, Error>
     func searchMovies(query: String) -> AnyPublisher<[Movie], Error>
     func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error>
     func fetchMovieDetails(id: Int) -> AnyPublisher<MovieDetails, Error>
@@ -36,6 +37,15 @@ public final class TMDBRemoteDataSource: TMDBRemoteDataSourceProtocol {
 
     public func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> {
         let endpoint = MoviesEndpoints.movies(type: type, page: page)
+        return networkingClient.request(endpoint)
+            .map { (response: MoviesResponseDTO) in
+                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
+            }
+            .eraseToAnyPublisher()
+    }
+
+    public func fetchMovies(type: MovieType, page: Int, sortBy: String?) -> AnyPublisher<MoviePage, Error> {
+        let endpoint = MoviesEndpoints.discoverMovies(type: type, page: page, sortBy: sortBy)
         return networkingClient.request(endpoint)
             .map { (response: MoviesResponseDTO) in
                 MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)

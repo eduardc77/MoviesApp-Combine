@@ -36,26 +36,43 @@ private final class InMemoryFavoritesStorage: FavoritesStorageProtocol {
 private final class RepoMock: MovieRepositoryProtocol {
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> { fatalError() }
     func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> { fatalError() }
+    func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error> { fatalError() }
     func searchMovies(query: String) -> AnyPublisher<[Movie], Error> { fatalError() }
     func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> { fatalError() }
     func fetchMovieDetails(id: Int) -> AnyPublisher<MovieDetails, Error> {
-        let details = MovieDetails(id: id, title: "T", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 5, voteCount: 1, runtime: nil, genres: [], tagline: nil)
+        let details = MovieDetails(id: id, title: "Movie \(id)", overview: "Detailed overview for movie \(id)", posterPath: "/poster\(id).jpg", backdropPath: "/backdrop\(id).jpg", releaseDate: "2023-01-01", voteAverage: 7.5, voteCount: 100, runtime: 120, genres: [Genre(id: 28, name: "Action"), Genre(id: 12, name: "Adventure")], tagline: "An epic adventure")
         return Just(details).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 }
 
 private final class FailingRepoMock: MovieRepositoryProtocol {
-    func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> { fatalError() }
-    func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> { fatalError() }
-    func searchMovies(query: String) -> AnyPublisher<[Movie], Error> { fatalError() }
-    func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> { fatalError() }
+    func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> {
+        Fail(outputType: [Movie].self, failure: URLError(.badServerResponse)).eraseToAnyPublisher()
+    }
+
+    func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> {
+        Fail(outputType: MoviePage.self, failure: URLError(.badServerResponse)).eraseToAnyPublisher()
+    }
+
+    func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error> {
+        Fail(outputType: MoviePage.self, failure: URLError(.badServerResponse)).eraseToAnyPublisher()
+    }
+
+    func searchMovies(query: String) -> AnyPublisher<[Movie], Error> {
+        Fail(outputType: [Movie].self, failure: URLError(.badServerResponse)).eraseToAnyPublisher()
+    }
+
+    func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> {
+        Fail(outputType: MoviePage.self, failure: URLError(.badServerResponse)).eraseToAnyPublisher()
+    }
+
     func fetchMovieDetails(id: Int) -> AnyPublisher<MovieDetails, Error> {
         Fail(outputType: MovieDetails.self, failure: URLError(.badServerResponse)).eraseToAnyPublisher()
     }
 }
 
 @MainActor
-final class MovieDetailViewTests: XCTestCase {
+final class MovieDetailViewModelTests: XCTestCase {
     func testFetchLifecycleAndToggleFavorite() {
         let repo = RepoMock()
         let store = FavoritesStore(storage: InMemoryFavoritesStorage())
