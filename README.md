@@ -1,11 +1,11 @@
 # 🎬 Movies-App
 
-A modern, performant iOS movies app built with SwiftUI, Combine, and clean architecture. Discover, search, and favorite movies with server-side sorting and optimized pagination.
-
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
 ![iOS](https://img.shields.io/badge/iOS-17.0+-blue)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-Modern-red)
 ![Architecture](https://img.shields.io/badge/Architecture-Modular-green)
+
+A modern, performant iOS movies app built with SwiftUI, Combine, and clean architecture. Discover, search, and favorite movies with server-side sorting and optimized pagination.
 
 ## 📱 Screenshots
 
