@@ -1,5 +1,5 @@
 //
-//  TMDBRemoteDataSource.swift
+//  MovieRemoteDataSource.swift
 //  MoviesNetwork
 //
 //  Created by User on 9/10/25.
@@ -10,7 +10,7 @@ import MoviesDomain
 
 /// Protocol defining TMDB remote data source operations
 /// Follows repository pattern with remote data source abstraction
-public protocol TMDBRemoteDataSourceProtocol: Sendable {
+public protocol MovieRemoteDataSourceProtocol: Sendable {
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error>
     func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error>
     func fetchMovies(type: MovieType, page: Int, sortBy: String?) -> AnyPublisher<MoviePage, Error>
@@ -21,7 +21,7 @@ public protocol TMDBRemoteDataSourceProtocol: Sendable {
 
 /// Remote data source implementation for TMDB API
 /// Uses the networking client internally for HTTP operations
-public final class TMDBRemoteDataSource: TMDBRemoteDataSourceProtocol {
+public final class MovieRemoteDataSource: MovieRemoteDataSourceProtocol {
     private let networkingClient: TMDBNetworkingClientProtocol
 
     public init(networkingClient: TMDBNetworkingClientProtocol) {

@@ -2,37 +2,73 @@
 //  FavoritesViewModel.swift
 //  MoviesFavorites
 //
+//  Created by User on 9/10/25.
+//
 
 import Foundation
 import Combine
+import Observation
 import MoviesDomain
 import MoviesPersistence
 
 @MainActor
-public final class FavoritesViewModel: ObservableObject {
-    @Published public private(set) var items: [Movie] = []
-    @Published public private(set) var isLoading: Bool = false
-    @Published public private(set) var error: Error?
-    @Published public var sortOrder: MovieSortOrder?
+@Observable
+public final class FavoritesViewModel {
+    public private(set) var items: [Movie] = []
+    public private(set) var isLoading: Bool = false
+    public private(set) var error: Error?
+    public var sortOrder: MovieSortOrder?
 
-    private let repository: MovieRepositoryProtocol
-    private let favoritesStore: FavoritesStore
-    private var cancellables = Set<AnyCancellable>()
-    private var currentRequest: AnyCancellable?
+    @ObservationIgnored private let repository: MovieRepositoryProtocol
+    @ObservationIgnored private let favoritesStore: FavoritesStoreProtocol
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private var currentRequest: AnyCancellable?
 
-    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStore) {
+    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol) {
         self.repository = repository
         self.favoritesStore = favoritesStore
+        startObservingFavorites()
+    }
+
+    // MARK: - View State
+    public enum FavoritesViewState {
+        case loading
+        case error(Error)
+        case empty
+        case content(items: [Movie])
+    }
+
+    public var state: FavoritesViewState {
+        if let error { return .error(error) }
+        if isLoading && items.isEmpty { return .loading }
+        if items.isEmpty { return .empty }
+        return .content(items: items)
     }
 
     public func reload() {
-        let ids = Array(favoritesStore.getFavoriteMovieIds())
+        let ids = Array(favoritesStore.favoriteMovieIds)
+        reload(for: ids)
+    }
+
+    private func startObservingFavorites() {
+        withObservationTracking({ [weak self] in
+            guard let self else { return }
+            let ids = Array(self.favoritesStore.favoriteMovieIds)
+            self.reload(for: ids)
+        }, onChange: { [weak self] in
+            DispatchQueue.main.async { self?.startObservingFavorites() }
+        })
+    }
+
+    private func reload(for ids: [Int]) {
         isLoading = true
         error = nil
         guard !ids.isEmpty else { items = []; isLoading = false; return }
 
-        // Cancel any previous request to prevent memory leaks
+        // Cancel any previous request to prevent overlaps and memory leaks
         currentRequest?.cancel()
+        currentRequest = nil
+        cancellables.removeAll()
 
         // Load favorites sequentially in batches of 3 to avoid overwhelming the API
         loadFavoritesSequentially(ids: ids, batchSize: 3)
@@ -97,7 +133,7 @@ public final class FavoritesViewModel: ObservableObject {
     }
 
     public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
-    public func isFavorite(_ id: Int) -> Bool { favoritesStore.getFavoriteMovieIds().contains(id) }
+    public func isFavorite(_ id: Int) -> Bool { favoritesStore.isFavorite(movieId: id) }
     public func setSortOrder(_ order: MovieSortOrder) {
         // Cancel any in-flight requests to prevent race conditions
         currentRequest?.cancel()

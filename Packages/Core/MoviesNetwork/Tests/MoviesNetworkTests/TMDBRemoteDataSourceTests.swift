@@ -26,7 +26,7 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
             let dto = MoviesResponseDTO(results: [MovieDTO(id: 1, title: "A", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 7.0, voteCount: 10, genreIds: [1], genres: nil)], page: 1, totalPages: 1, totalResults: 1)
             return Just(dto).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
-        let sut = TMDBRemoteDataSource(networkingClient: client)
+        let sut = MovieRemoteDataSource(networkingClient: client)
 
         let exp = expectation(description: "mapped")
         sut.fetchMovies(type: .nowPlaying)
@@ -45,7 +45,7 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
             let dto = MoviesResponseDTO(results: [], page: 2, totalPages: 5, totalResults: 100)
             return Just(dto).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
-        let sut = TMDBRemoteDataSource(networkingClient: client)
+        let sut = MovieRemoteDataSource(networkingClient: client)
 
         let exp = expectation(description: "page")
         sut.searchMovies(query: "q", page: 2)
@@ -65,7 +65,7 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
             let dto = MovieDetailsDTO(id: 9, title: "X", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 6.5, voteCount: 5, runtime: 100, genres: [GenreDTO(id: 1, name: "Action")], tagline: nil)
             return Just(dto).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
-        let sut = TMDBRemoteDataSource(networkingClient: client)
+        let sut = MovieRemoteDataSource(networkingClient: client)
 
         let exp = expectation(description: "mapped details")
         sut.fetchMovieDetails(id: 9)

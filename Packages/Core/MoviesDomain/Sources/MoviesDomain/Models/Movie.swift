@@ -5,8 +5,6 @@
 //  Created by User on 9/10/25.
 //
 
-import Foundation
-
 public struct Movie: Identifiable, Hashable, Equatable, Sendable {
     public let id: Int
     public let title: String
@@ -44,6 +42,7 @@ public struct Movie: Identifiable, Hashable, Equatable, Sendable {
     }
 
     public var releaseYear: String {
-        String(releaseDate.prefix(4))
+        let year = releaseDate.prefix(4)
+        return year.count == 4 && year.allSatisfy(\.isNumber) ? String(year) : ""
     }
 }

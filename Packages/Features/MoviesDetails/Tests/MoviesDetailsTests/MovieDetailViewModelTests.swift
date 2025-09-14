@@ -11,7 +11,7 @@ import Combine
 @testable import MoviesDomain
 @testable import MoviesPersistence
 
-private final class InMemoryFavoritesStorage: FavoritesStorageProtocol {
+private final class InMemoryFavoritesLocalDataSource: FavoritesLocalDataSourceProtocol {
     private var ids = Set<Int>()
 
     func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> {
@@ -75,13 +75,13 @@ private final class FailingRepoMock: MovieRepositoryProtocol {
 final class MovieDetailViewModelTests: XCTestCase {
     func testFetchLifecycleAndToggleFavorite() {
         let repo = RepoMock()
-        let store = FavoritesStore(storage: InMemoryFavoritesStorage())
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource())
         let vm = MovieDetailViewModel(repository: repo, favoritesStore: store, movieId: 7)
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         XCTAssertEqual(vm.movie?.id, 7)
         vm.toggleFavorite()
         RunLoop.main.run(until: Date().addingTimeInterval(0.01))
-        XCTAssertTrue(store.getFavoriteMovieIds().contains(7))
+        XCTAssertTrue(store.favoriteMovieIds.contains(7))
     }
 
     func testFetchSetsErrorOnFailure() {

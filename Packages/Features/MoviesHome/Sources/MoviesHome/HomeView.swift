@@ -22,14 +22,12 @@ public struct HomeView: View {
         GridItem(.adaptive(minimum: 160), spacing: 16)
     ]
 
-    public init(repository: MovieRepositoryProtocol, favoriteStore: FavoritesStore) {
+    public init(repository: MovieRepositoryProtocol, favoriteStore: FavoritesStoreProtocol) {
         _viewModel = State(initialValue: HomeViewModel(repository: repository, favoritesStore: favoriteStore))
     }
 
     public var body: some View {
-        // Simple matched-geometry underline; no measurement needed
         VStack(spacing: 0) {
-            // Simple, reusable top filter bar
             TopFilterBar<HomeCategory>(
                 currentFilter: $selectedTab,
                 activeColor: .white,
@@ -38,25 +36,30 @@ public struct HomeView: View {
             )
             .background(Color.black)
 
-            if let error = viewModel.error {
-                VStack(spacing: 16) {
-                    Text("Loading Error")
-                        .font(.headline)
-                        .foregroundColor(.red)
+            switch viewModel.state {
+            case .loading:
+                LoadingView()
+            case .error(let error):
+                ContentUnavailableView {
+                    Label(String(localized: .HomeL10n.errorTitle), systemImage: "exclamationmark.triangle.fill")
+                } description: {
                     Text(error.localizedDescription)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    Button("Try Again") {
+                } actions: {
+                    Button(String(localized: .DesignSystemL10n.retry)) {
                         viewModel.load(reset: true)
                     }
+                    .tint(.primary)
                     .buttonStyle(.bordered)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.isLoading && viewModel.items.isEmpty {
-                LoadingView()
-            } else {
+            case .empty:
+                ContentUnavailableView {
+                    Label(String(localized: .HomeL10n.title), systemImage: "film")
+                } description: {
+                    Text(String(localized: .DesignSystemL10n.none))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .content(_, _):
                 TabView(selection: $selectedTab) {
                     ForEach(HomeCategory.allCases) { category in
                         CardGridView(
@@ -64,9 +67,7 @@ public struct HomeView: View {
                             onTap: { appRouter.navigateToMovieDetails(movieId: $0.id) },
                             onFavoriteToggle: { viewModel.toggleFavorite($0.id) },
                             isFavorite: { viewModel.isFavorite($0.id) },
-                            onLoadNext: {
-                                viewModel.load(reset: false)
-                            },
+                            onLoadNext: { viewModel.load(reset: false) },
                             showLoadingOverlay: viewModel.isLoadingNext
                         )
                         .tag(category)
@@ -96,10 +97,10 @@ public struct HomeView: View {
         }
         .onChange(of: selectedTab) { _, newTab in
             switch newTab {
-            case .nowPlaying: viewModel.category = .nowPlaying; viewModel.load(reset: true)
-            case .popular: viewModel.category = .popular; viewModel.load(reset: true)
-            case .topRated: viewModel.category = .topRated; viewModel.load(reset: true)
-            case .upcoming: viewModel.category = .upcoming; viewModel.load(reset: true)
+            case .nowPlaying: viewModel.setCategory(.nowPlaying)
+            case .popular: viewModel.setCategory(.popular)
+            case .topRated: viewModel.setCategory(.topRated)
+            case .upcoming: viewModel.setCategory(.upcoming)
             }
         }
     }

@@ -38,7 +38,9 @@ let package = Package(
         ),
         .testTarget(
             name: "MoviesFavoritesTests",
-            dependencies: ["MoviesFavorites"]
+            dependencies: [
+                "MoviesFavorites"
+            ]
         )
     ]
 )

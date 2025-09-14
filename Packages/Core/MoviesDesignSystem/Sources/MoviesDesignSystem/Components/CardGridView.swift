@@ -62,14 +62,11 @@ public struct CardGridView<Item: CardDisplayable>: View {
                 footerLoadingIndicator
             }
         }
+        .scrollDismissesKeyboard(.immediately)
         .onChange(of: items.count) { _, _ in
             hasTriggeredLoadNext = false // Reset when items count changes
         }
-#if canImport(UIKit)
-        .background(Color(.systemGray4))
-#else
-        .background(Color.gray.opacity(0.2))
-#endif
+        .background(Color.secondary.opacity(0.4))
     }
 
     var footerLoadingIndicator: some View {

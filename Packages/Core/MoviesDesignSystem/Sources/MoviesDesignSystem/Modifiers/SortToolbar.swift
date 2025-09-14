@@ -27,40 +27,30 @@ public struct SortToolbarModifier: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .toolbar {
-                #if canImport(UIKit)
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .automatic) {
                     Button {
                         isPresented.toggle()
                     } label: {
                         Image("ic_sort", bundle: Bundle.module)
                     }
-                    .tint(.white)
                 }
-                #endif
             }
-            .confirmationDialog("Sort movies", isPresented: $isPresented) {
+            .confirmationDialog(String(localized: .DesignSystemL10n.sortTitle), isPresented: $isPresented) {
                 ForEach(MovieSortOrder.allCases) { order in
                     Button {
                         onSelect(order)
                         isPresented = false  // Auto-dismiss after selection
                     } label: {
-                        Label {
-                            Text(String(localized: order.labelKey))
-                        } icon: {
-                            if currentSortOrder == order {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(.accentColor)
-                                    .font(.system(size: 14, weight: .semibold))
-                            } else {
-                                Image(systemName: "circle")
-                                    .opacity(0) // Invisible placeholder for alignment
-                            }
-                        }
-                        .labelStyle(.titleAndIcon)
+                        Text("\(currentSortOrder == order ? "✓" : "") \(String(localized: order.labelKey))")
+                            .foregroundStyle(.white)
+                            .tint(.white)
                     }
+                    .foregroundStyle(.white)
+                    .tint(.white)
                 }
-                Button("Cancel", role: .cancel) { }
+                Button(String(localized: .DesignSystemL10n.cancel), role: .cancel) { }
             }
+            .tint(.white)
     }
 }
 

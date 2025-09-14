@@ -5,8 +5,6 @@
 //  Created by User on 9/10/25.
 //
 
-import Foundation
-
 public struct Genre: Identifiable, Hashable, Equatable, Sendable {
     public let id: Int
     public let name: String

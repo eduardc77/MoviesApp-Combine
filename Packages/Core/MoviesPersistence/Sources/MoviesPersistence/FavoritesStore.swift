@@ -12,22 +12,22 @@ import MoviesDomain
 @MainActor
 @Observable
 public final class FavoritesStore {
-    /// Storage for persisting favorites data
-    private let storage: FavoritesStorageProtocol
+    /// Repository for favorites (local SwiftData now, remote later if needed)
+    @ObservationIgnored private let repository: FavoritesRepositoryProtocol
     /// Reactive set of favorite movie IDs
     public var favoriteMovieIds: Set<Int> = []
     /// Cancellables for managing subscriptions
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     /// Initialize with Combine-based loading
-    public init(storage: FavoritesStorageProtocol = FavoritesStorage()) {
-        self.storage = storage
+    public init(favoritesLocalDataSource: FavoritesLocalDataSourceProtocol = FavoritesLocalDataSource()) {
+        self.repository = FavoritesRepository(localDataSource: favoritesLocalDataSource)
         loadFavorites()
     }
 
     /// Load favorites from storage using Combine
     private func loadFavorites() {
-        storage.getFavoriteMovieIds()
+        repository.getFavoriteMovieIds()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 if case .failure(let error) = completion {
@@ -42,13 +42,13 @@ public final class FavoritesStore {
     }
 
     /// Toggle favorite status for a movie
-    public func toggleFavorite(movieId: Int) {
+    private func toggleFavorite(for movieId: Int) {
         if favoriteMovieIds.contains(movieId) {
             // Optimistic UI update
             favoriteMovieIds.remove(movieId)
 
-            // Perform storage operation
-            storage.removeFromFavorites(movieId: movieId)
+            // Perform repository operation
+            repository.toggleFavorite(movieId: movieId)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { [weak self] completion in
                     guard let self else { return }
@@ -65,8 +65,8 @@ public final class FavoritesStore {
             // Optimistic UI update
             favoriteMovieIds.insert(movieId)
 
-            // Perform storage operation
-            storage.addToFavorites(movieId: movieId)
+            // Perform repository operation
+            repository.toggleFavorite(movieId: movieId)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveCompletion: { [weak self] completion in
                     guard let self else { return }
@@ -83,12 +83,13 @@ public final class FavoritesStore {
     }
 
     /// Check if movie is favorited
-    public func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
-        storage.isFavorite(movieId: movieId)
+    private func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
+        repository.isMovieFavorited(movieId: movieId)
     }
+}
 
-    /// Get current favorite movie IDs
-    public func getFavoriteMovieIds() -> Set<Int> {
-        favoriteMovieIds
-    }
+// MARK: - Domain Favorites Protocol Conformance
+extension FavoritesStore: FavoritesStoreProtocol {
+    public func isFavorite(movieId: Int) -> Bool { favoriteMovieIds.contains(movieId) }
+    public func toggleFavorite(movieId: Int) { toggleFavorite(for: movieId) }
 }

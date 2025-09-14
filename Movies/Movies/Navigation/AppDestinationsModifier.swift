@@ -11,7 +11,7 @@ import MoviesDetails
 
 /// Attaches app-wide destinations once, to avoid duplicated switches in stacks
 struct AppDestinationsModifier: ViewModifier {
-    @Environment(AppEnvironment.self) private var appEnvironment
+    @Environment(AppDependencies.self) private var appEnvironment
 
     func body(content: Content) -> some View {
         content
@@ -21,7 +21,7 @@ struct AppDestinationsModifier: ViewModifier {
                     MovieDetailView(
                         movieId: id,
                         repository: appEnvironment.movieRepository,
-                        favoriteStore: appEnvironment.favoritesStore
+                        favoriteStore: appEnvironment.favorites
                     )
                 }
             }

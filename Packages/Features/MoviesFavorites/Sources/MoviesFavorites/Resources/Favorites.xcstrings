@@ -12,6 +12,10 @@
     "favorites.empty_description" : {
       "comment" : "Empty state description for favorites.",
       "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Tap the heart on a movie to add it here." } } }
+    },
+    "favorites.error_title" : {
+      "comment" : "Error title shown when the Favorites screen fails to load content.",
+      "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Favorites Error" } } }
     }
   },
   "version" : "1.0"

@@ -44,13 +44,12 @@ public struct TopFilterBar<T: TopFilter>: View {
                     }
                 }
                 .padding(.horizontal)
-                .padding(.vertical, 8)
+
             }
             Divider().opacity(0.15)
         }
     }
 
-    @ViewBuilder
     private func filterItem(for filter: T) -> some View {
         Button {
             onSelection?()
@@ -62,12 +61,13 @@ public struct TopFilterBar<T: TopFilter>: View {
                 .lineLimit(1)
                 .font(.headline)
                 .padding(.vertical, 8)
+                .padding(.bottom, 5)
                 .foregroundStyle(currentFilter == filter ? activeColor : inactiveColor)
                 .overlay(alignment: .bottom) {
                     if currentFilter == filter {
                         Rectangle()
                             .fill(underlineColor)
-                            .frame(height: 2)
+                            .frame(height: 4)
                             .matchedGeometryEffect(id: "TopFilterBar", in: animation)
                     }
                 }

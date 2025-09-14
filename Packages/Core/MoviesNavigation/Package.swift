@@ -1,5 +1,4 @@
-// swift-tools-version: 5.9
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 6.0
 
 import PackageDescription
 
@@ -23,13 +22,11 @@ let package = Package(
     targets: [
         .target(
             name: "MoviesNavigation",
-            dependencies: ["MoviesDomain"],
-            path: "Sources/MoviesNavigation"
+            dependencies: ["MoviesDomain"]
         ),
         .testTarget(
             name: "MoviesNavigationTests",
-            dependencies: ["MoviesNavigation"],
-            path: "Tests/MoviesNavigationTests"
+            dependencies: ["MoviesNavigation"]
         ),
     ]
 )

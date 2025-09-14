@@ -5,10 +5,8 @@
 //  Created by User on 9/10/25.
 //
 
-import Foundation
 import SwiftUI
 import MoviesDomain
-import Observation
 
 /// Main app router for navigation coordination
 /// Handles all navigation across the app with clean separation

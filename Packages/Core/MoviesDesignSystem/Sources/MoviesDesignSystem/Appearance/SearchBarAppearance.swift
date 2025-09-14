@@ -5,7 +5,6 @@
 //  Centralized UIAppearance configuration for SearchBar
 //
 
-import SwiftUI
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -25,14 +24,18 @@ public enum SearchBarAppearance {
         if let magnifier = UIImage(
             systemName: "magnifyingglass",
             withConfiguration: boldSymbol)?
-            .withTintColor(.black, renderingMode: .alwaysOriginal) {
+            .withTintColor(.label, renderingMode: .alwaysOriginal) {
             searchBar.setImage(magnifier, for: .search, state: .normal)
             searchBar.setImage(magnifier, for: .search, state: .highlighted)
         }
         let searchTF = UISearchTextField.appearance(whenContainedInInstancesOf: [UISearchBar.self])
-        searchTF.backgroundColor = .white
+        searchTF.backgroundColor = UIColor.systemGray6
         searchTF.textColor = .black
         searchTF.tintColor = .black
+        searchTF.attributedPlaceholder = NSAttributedString(
+            string: "Search Movies",
+            attributes: [.foregroundColor: UIColor.systemGray]
+        )
         searchTF.defaultTextAttributes = [
             NSAttributedString.Key.foregroundColor: UIColor.black,
             NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .body),

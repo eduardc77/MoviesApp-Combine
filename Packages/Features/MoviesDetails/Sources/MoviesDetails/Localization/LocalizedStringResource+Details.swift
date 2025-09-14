@@ -12,5 +12,20 @@ public extension LocalizedStringResource {
             table: "Details",
             bundle: .atURL(Bundle.module.bundleURL)
         )
+        public static let releasedIn = LocalizedStringResource(
+            "details.released_in",
+            table: "Details",
+            bundle: .atURL(Bundle.module.bundleURL)
+        )
+        public static let ratingOutOfTen = LocalizedStringResource(
+            "details.rating_out_of_ten",
+            table: "Details",
+            bundle: .atURL(Bundle.module.bundleURL)
+        )
+        public static let voteCount = LocalizedStringResource(
+            "details.vote_count",
+            table: "Details",
+            bundle: .atURL(Bundle.module.bundleURL)
+        )
     }
 }

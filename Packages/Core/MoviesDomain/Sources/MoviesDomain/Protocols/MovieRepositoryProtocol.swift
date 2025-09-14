@@ -1,23 +1,11 @@
 //
-//  Repository.swift
+//  MovieRepositoryProtocol.swift
 //  MoviesDomain
 //
 //  Created by User on 9/10/25.
 //
 
-import Foundation
 import Combine
-
-public struct MoviePage: Sendable {
-    public let items: [Movie]
-    public let page: Int
-    public let totalPages: Int
-    public init(items: [Movie], page: Int, totalPages: Int) {
-        self.items = items
-        self.page = page
-        self.totalPages = totalPages
-    }
-}
 
 /// Protocol defining the core movie repository operations
 public protocol MovieRepositoryProtocol: Sendable {
@@ -35,16 +23,4 @@ public protocol MovieRepositoryProtocol: Sendable {
 
     /// Fetches detailed information for a specific movie
     func fetchMovieDetails(id: Int) -> AnyPublisher<MovieDetails, Error>
-}
-
-/// Protocol for managing favorite movies
-public protocol FavoritesRepositoryProtocol: Sendable {
-    /// Gets all favorite movie IDs
-    func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error>
-
-    /// Checks if a movie is favorited
-    func isMovieFavorited(movieId: Int) -> AnyPublisher<Bool, Error>
-
-    /// Toggles favorite status for a movie
-    func toggleFavorite(movieId: Int) -> AnyPublisher<Void, Error>
 }

@@ -7,5 +7,10 @@ public extension LocalizedStringResource {
             table: "Home",
             bundle: .atURL(Bundle.module.bundleURL)
         )
+        public static let errorTitle = LocalizedStringResource(
+            "home.error_title",
+            table: "Home",
+            bundle: .atURL(Bundle.module.bundleURL)
+        )
     }
 }

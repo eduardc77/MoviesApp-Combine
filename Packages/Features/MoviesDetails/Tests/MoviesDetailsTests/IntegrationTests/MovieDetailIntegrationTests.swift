@@ -45,8 +45,8 @@ final class MovieDetailIntegrationTests: XCTestCase {
             imageBaseURL: URL(string: "https://image.tmdb.org/t/p")!
         )
         let client = TMDBNetworkingClient(session: session, networkingConfig: networkingConfig)
-        let remote = TMDBRemoteDataSource(networkingClient: client)
-        return TMDBMovieRepository(remoteDataSource: remote)
+        let remote = MovieRemoteDataSource(networkingClient: client)
+        return MovieRepository(remoteDataSource: remote)
     }
 
     func testViewModelFetchesDetailsViaRepositoryStubbedByURLProtocol() {
@@ -71,7 +71,7 @@ final class MovieDetailIntegrationTests: XCTestCase {
         }
 
         let repo = makeRepository()
-        let store = FavoritesStore(storage: InMemoryFavoritesStorageStub())
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSourceStub())
         let vm = MovieDetailViewModel(repository: repo, favoritesStore: store, movieId: 99)
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         XCTAssertEqual(vm.movie?.id, 99)
@@ -79,7 +79,7 @@ final class MovieDetailIntegrationTests: XCTestCase {
 }
 
 // Minimal in-memory storage for deterministic favorites behavior
-final class InMemoryFavoritesStorageStub: FavoritesStorageProtocol {
+final class InMemoryFavoritesLocalDataSourceStub: FavoritesLocalDataSourceProtocol {
     private var ids = Set<Int>()
     func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> { Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher() }
     func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> { ids.insert(movieId); return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher() }

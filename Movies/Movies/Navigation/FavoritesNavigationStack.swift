@@ -12,14 +12,14 @@ import MoviesFavorites
 /// Navigation stack for the Favorites tab
 public struct FavoritesNavigationStack: View {
     @Environment(AppRouter.self) private var appRouter
-    @Environment(AppEnvironment.self) private var appEnvironment
+    @Environment(AppDependencies.self) private var appDependencies
 
     public init() {}
 
     public var body: some View {
         @Bindable var appRouter = appRouter
         NavigationStack(path: $appRouter.favoritesPath) {
-            FavoritesView(repository: appEnvironment.movieRepository, favoriteStore: appEnvironment.favoritesStore)
+            FavoritesView(repository: appDependencies.movieRepository, favoriteStore: appDependencies.favorites)
                 .withAppDestinations()
         }
     }

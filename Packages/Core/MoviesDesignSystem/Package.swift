@@ -22,7 +22,10 @@ let package = Package(
     targets: [
         .target(
             name: "MoviesDesignSystem",
-            dependencies: ["Kingfisher", "MoviesUtilities"],
+            dependencies: [
+                "Kingfisher",
+                "MoviesUtilities"
+            ],
             resources: [
                 .process("Resources")
             ]

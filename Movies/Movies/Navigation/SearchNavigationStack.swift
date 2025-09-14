@@ -12,14 +12,14 @@ import MoviesSearch
 /// Navigation stack for the Search tab
 public struct SearchNavigationStack: View {
     @Environment(AppRouter.self) private var appRouter
-    @Environment(AppEnvironment.self) private var appEnvironment
+    @Environment(AppDependencies.self) private var appDependencies
 
     public init() {}
 
     public var body: some View {
         @Bindable var appRouter = appRouter
         NavigationStack(path: $appRouter.searchPath) {
-            SearchView(repository: appEnvironment.movieRepository, favoriteStore: appEnvironment.favoritesStore)
+            SearchView(repository: appDependencies.movieRepository, favoriteStore: appDependencies.favorites)
                 .withAppDestinations()
 
         }

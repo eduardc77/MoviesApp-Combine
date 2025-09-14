@@ -6,47 +6,50 @@
 //
 
 import SwiftUI
-import MoviesPersistence
 import MoviesDomain
 import MoviesDesignSystem
 
 /// Movie details view
 public struct MovieDetailView: View {
-    @StateObject private var viewModel: MovieDetailViewModel
+    @State private var viewModel: MovieDetailViewModel
 
-    public init(movieId: Int, repository: MovieRepositoryProtocol, favoriteStore: FavoritesStore) {
-        _viewModel = StateObject(wrappedValue:
-            MovieDetailViewModel(
-                repository: repository,
-                favoritesStore: favoriteStore,
-                movieId: movieId
-            )
+    public init(movieId: Int, repository: MovieRepositoryProtocol, favoriteStore: FavoritesStoreProtocol) {
+        _viewModel = State(initialValue:
+                            MovieDetailViewModel(
+                                repository: repository,
+                                favoritesStore: favoriteStore,
+                                movieId: movieId
+                            )
         )
     }
 
     public var body: some View {
-        if let movie = viewModel.movie {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    header(for: movie)
-                    content(for: movie)
+        Group {
+            switch viewModel.state {
+            case .loading:
+                LoadingView()
+            case .error:
+                notFoundView
+            case .content(let movie):
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        header(for: movie)
+                        content(for: movie)
+                    }
                 }
+
             }
-            .coordinateSpace(name: "detailScroll")
-            .navigationTitle(movie.title)
-            #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-            #endif
-            .toolbar { favoriteToolbar }
-        } else {
-            notFoundView
         }
+        .navigationTitle(viewModel.movie?.title ?? String(localized: .DetailsL10n.title))
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+#endif
+        .toolbar { favoriteToolbar }
     }
 }
 
 // MARK: - Subviews
 private extension MovieDetailView {
-    @ViewBuilder
     func header(for movie: MovieDetails) -> some View {
         StretchyRatioHeader(ratio: 16.0/9.0) {
             Group {
@@ -74,7 +77,6 @@ private extension MovieDetailView {
         )
     }
 
-    @ViewBuilder
     func content(for movie: MovieDetails) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 12) {
@@ -99,15 +101,15 @@ private extension MovieDetailView {
                     }
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Released in \(movie.releaseYear)")
+                        Text(String(format: String(localized: .DetailsL10n.releasedIn), movie.releaseYear))
                             .font(.headline)
 
                         HStack(spacing: 6) {
                             Image(ds: .star).foregroundStyle(Color.orange)
-                            Text("\(movie.voteAverage, specifier: "%.1f") / 10")
+                            Text(String(format: String(localized: .DetailsL10n.ratingOutOfTen), movie.voteAverage))
                                 .font(.headline)
                                 .foregroundStyle(.primary)
-                            Text("(\(movie.voteCount))")
+                            Text(String(format: String(localized: .DetailsL10n.voteCount), Int64(movie.voteCount)))
                                 .foregroundStyle(.secondary)
                         }
                         .font(.headline)
@@ -119,7 +121,7 @@ private extension MovieDetailView {
 
             Divider()
 
-            Text("Released in \(movie.releaseYear)")
+            Text(String(format: String(localized: .DetailsL10n.releasedIn), movie.releaseYear))
                 .font(.headline)
 
             Text(movie.overview)
@@ -129,7 +131,6 @@ private extension MovieDetailView {
         .padding(.horizontal)
     }
 
-    @ViewBuilder
     func genresChips(for movie: MovieDetails) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
@@ -151,13 +152,7 @@ private extension MovieDetailView {
 
     @ToolbarContentBuilder
     var favoriteToolbar: some ToolbarContent {
-        ToolbarItem(placement: {
-            #if os(iOS)
-            .navigationBarTrailing
-            #else
-            .automatic
-            #endif
-        }()) {
+        ToolbarItem(placement: .automatic) {
             Button { viewModel.toggleFavorite() } label: {
                 if viewModel.isFavorite() {
                     Image(ds: .heartFill)
@@ -171,25 +166,23 @@ private extension MovieDetailView {
                         .renderingMode(.template)
                         .frame(width: 20, height: 20)
                         .transition(.scale)
-                        #if os(iOS)
-                        .foregroundStyle(Color(.systemBackground))
-                        #else
-                        .foregroundStyle(.primary)
-                        #endif
+                        .foregroundStyle(.white)
                 }
             }
         }
     }
 
-    @ViewBuilder
     var notFoundView: some View {
-        VStack(spacing: 20) {
-            if viewModel.isLoading {
-                LoadingView()
-            } else {
-                Text(.DetailsL10n.notFound)
-                    .foregroundColor(.gray)
+        ContentUnavailableView {
+            Label(String(localized: .DetailsL10n.notFound), systemImage: "exclamationmark.triangle.fill")
+        } description: {
+            Text(String(localized: .DesignSystemL10n.none)) // or a dedicated details message if you add one
+        } actions: {
+            Button(String(localized: .DesignSystemL10n.retry)) {
+                viewModel.fetch()
             }
+            .tint(.primary)
+            .buttonStyle(.bordered)
         }
     }
 }

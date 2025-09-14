@@ -9,21 +9,35 @@ import MoviesDomain
 import MoviesPersistence
 
 @MainActor
-public final class MovieDetailViewModel: ObservableObject {
-    @Published public private(set) var movie: MovieDetails?
-    @Published public private(set) var isLoading = false
-    @Published public private(set) var error: Error?
+@Observable
+public final class MovieDetailViewModel {
+    public private(set) var movie: MovieDetails?
+    public private(set) var isLoading = false
+    public private(set) var error: Error?
 
-    private let repository: MovieRepositoryProtocol
-    private let favoritesStore: FavoritesStore
-    private let movieId: Int
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private let repository: MovieRepositoryProtocol
+    @ObservationIgnored private let favoritesStore: FavoritesStoreProtocol
+    @ObservationIgnored private let movieId: Int
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
-    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStore, movieId: Int) {
+    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol, movieId: Int) {
         self.repository = repository
         self.favoritesStore = favoritesStore
         self.movieId = movieId
         fetch()
+    }
+
+    // MARK: - View State
+    public enum DetailViewState {
+        case loading
+        case error(Error)
+        case content(MovieDetails)
+    }
+
+    public var state: DetailViewState {
+        if let error { return .error(error) }
+        if let movie = movie { return .content(movie) }
+        return .loading
     }
 
     public func fetch() {
@@ -42,12 +56,10 @@ public final class MovieDetailViewModel: ObservableObject {
     }
 
     public func toggleFavorite() {
-        guard let id = movie?.id else { return }
-        favoritesStore.toggleFavorite(movieId: id)
+        favoritesStore.toggleFavorite(movieId: movieId)
     }
 
     public func isFavorite() -> Bool {
-        guard let id = movie?.id else { return false }
-        return favoritesStore.getFavoriteMovieIds().contains(id)
+        return favoritesStore.isFavorite(movieId: movieId)
     }
 }

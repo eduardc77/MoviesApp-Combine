@@ -13,51 +13,44 @@ import MoviesDesignSystem
 
 public struct SearchView: View {
     @Environment(AppRouter.self) private var appRouter
-    @StateObject private var viewModel: SearchViewModel
+    @State private var viewModel: SearchViewModel
 
-    public init(repository: MovieRepositoryProtocol, favoriteStore: FavoritesStore) {
-        _viewModel = StateObject(wrappedValue: SearchViewModel(repository: repository, favoritesStore: favoriteStore))
+    public init(repository: MovieRepositoryProtocol, favoriteStore: FavoritesStoreProtocol) {
+        _viewModel = State(initialValue: SearchViewModel(repository: repository, favoritesStore: favoriteStore))
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            if let error = viewModel.error {
-                VStack(spacing: 16) {
-                    Text("Search Error")
-                        .font(.headline)
-                        .foregroundColor(.red)
+        Group {
+            switch viewModel.state {
+            case .idle:
+                ContentUnavailableView {
+                    Label(String(localized: .SearchL10n.emptyTitle), systemImage: "magnifyingglass")
+                } description: {
+                    Text(.SearchL10n.emptyDescription)
+                }
+            case .loading:
+                LoadingView()
+            case .error(let error):
+                ContentUnavailableView {
+                    Label(String(localized: .SearchL10n.errorTitle), systemImage: "exclamationmark.triangle.fill")
+                } description: {
                     Text(error.localizedDescription)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    Button("Try Again") {
+                } actions: {
+                    Button(String(localized: .DesignSystemL10n.retry)) {
                         if !viewModel.query.isEmpty {
                             viewModel.search(reset: true, trigger: .submit)
                         }
                     }
+                    .tint(.primary)
                     .buttonStyle(.bordered)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if viewModel.isLoading {
-                LoadingView()
-            } else if viewModel.items.isEmpty {
-
+            case .empty:
                 ContentUnavailableView {
-                    Label(
-                        viewModel.isQueryShort ? String(localized: .SearchL10n.emptyTitle) : String(localized: .SearchL10n.noResultsDescription),
-                        systemImage: viewModel.isQueryShort ? "magnifyingglass" : "film"
-                    )
+                    Label(String(localized: .SearchL10n.noResultsDescription), systemImage: "film")
                 } description: {
-                    Text(viewModel.isQueryShort ? .SearchL10n.emptyDescription : .SearchL10n.noResultsDescription)
+                    Text(.SearchL10n.noResultsDescription)
                 }
-                .frame(maxWidth: .infinity)
-                #if canImport(UIKit)
-                .background(Color(.systemGray6))
-                #else
-                .background(Color.gray.opacity(0.2))
-                #endif
-            } else {
+            case .content:
                 CardGridView(items: viewModel.items,
                              onTap: { item in appRouter.navigateToMovieDetails(movieId: item.id) },
                              onFavoriteToggle: { item in viewModel.toggleFavorite(item.id) },
@@ -66,13 +59,14 @@ public struct SearchView: View {
                              showLoadingOverlay: viewModel.isLoadingNext)
             }
         }
-
         .navigationTitle(Text(.SearchL10n.title))
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $viewModel.query,
                     placement: .navigationBarDrawer(displayMode: .always),
-                    prompt: "Search Movies")
+                    prompt: String(localized: .SearchL10n.searchPrompt))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.secondary.opacity(0.4))
         .onSubmit(of: .search) {
             viewModel.search(reset: true, trigger: .submit)
         }

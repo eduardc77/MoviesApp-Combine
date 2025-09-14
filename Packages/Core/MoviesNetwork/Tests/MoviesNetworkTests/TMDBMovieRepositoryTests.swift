@@ -3,7 +3,7 @@ import Combine
 @testable import MoviesNetwork
 @testable import MoviesDomain
 
-private final class RemoteDataSourceMock: TMDBRemoteDataSourceProtocol, @unchecked Sendable {
+private final class RemoteDataSourceMock: MovieRemoteDataSourceProtocol, @unchecked Sendable {
     var fetchMoviesHandler: ((MovieType, Int) -> AnyPublisher<MoviePage, Error>)?
     var fetchMoviesWithSortHandler: ((MovieType, Int, String?) -> AnyPublisher<MoviePage, Error>)?
     var searchMoviesHandler: ((String, Int) -> AnyPublisher<MoviePage, Error>)?
@@ -47,7 +47,7 @@ final class TMDBMovieRepositoryPassThroughTests: XCTestCase {
             let items = [Movie(id: 1, title: "A", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 7, voteCount: 10, genreIds: nil, genres: nil)]
             return Just(MoviePage(items: items, page: page, totalPages: 3)).setFailureType(to: Error.self).eraseToAnyPublisher()
         }
-        let repo = TMDBMovieRepository(remoteDataSource: remote)
+        let repo = MovieRepository(remoteDataSource: remote)
 
         let exp = expectation(description: "movies")
         repo.fetchMovies(type: .nowPlaying, page: 2)
@@ -68,7 +68,7 @@ final class TMDBMovieRepositoryPassThroughTests: XCTestCase {
             XCTAssertEqual(query, "q")
             return Just(MoviePage(items: [], page: page, totalPages: 1)).setFailureType(to: Error.self).eraseToAnyPublisher()
         }
-        let repo = TMDBMovieRepository(remoteDataSource: remote)
+        let repo = MovieRepository(remoteDataSource: remote)
 
         let exp = expectation(description: "search")
         repo.searchMovies(query: "q", page: 1)
@@ -85,7 +85,7 @@ final class TMDBMovieRepositoryPassThroughTests: XCTestCase {
         enum E: Error { case x }
         let remote = RemoteDataSourceMock()
         remote.detailsHandler = { _ in Fail(error: E.x).eraseToAnyPublisher() }
-        let repo = TMDBMovieRepository(remoteDataSource: remote)
+        let repo = MovieRepository(remoteDataSource: remote)
 
         let exp = expectation(description: "error")
         repo.fetchMovieDetails(id: 99)

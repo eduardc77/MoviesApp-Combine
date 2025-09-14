@@ -2,28 +2,33 @@
 //  SearchViewModel.swift
 //  MoviesSearch
 //
+//  Created by User on 9/10/25.
+//
 
 import Foundation
 import Combine
-import Observation
 import MoviesDomain
 import MoviesPersistence
 
 @MainActor
-public final class SearchViewModel: ObservableObject {
-    @Published public var items: [Movie] = []
-    @Published public var isLoading = false
-    @Published public var isLoadingNext = false
-    @Published public var error: Error?
-    @Published public var query: String = ""
+@Observable
+public final class SearchViewModel {
+    public var items: [Movie] = []
+    public var isLoading = false
+    public var isLoadingNext = false
+    public var error: Error?
+    public var query: String = "" {
+        didSet { querySubject.send(query) }
+    }
 
-    private var page = 1
-    private var totalPages = 1
-    private var currentRequest: AnyCancellable?
+    @ObservationIgnored private var page = 1
+    @ObservationIgnored private var totalPages = 1
+    @ObservationIgnored private var currentRequest: AnyCancellable?
 
-    private let repository: MovieRepositoryProtocol
-    private let favoritesStore: FavoritesStore
-    private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private let repository: MovieRepositoryProtocol
+    @ObservationIgnored private let favoritesStore: FavoritesStoreProtocol
+    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
+    @ObservationIgnored private let querySubject = PassthroughSubject<String, Never>()
 
     public enum Trigger {
         case debounce
@@ -34,24 +39,54 @@ public final class SearchViewModel: ObservableObject {
         query.trimmingCharacters(in: .whitespacesAndNewlines).count < 3
     }
 
-    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStore) {
+    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol) {
         self.repository = repository
         self.favoritesStore = favoritesStore
-        // Debounced type-ahead with guardrails (>=3 chars)
-        $query
+        // Debounced type-ahead (>=3 chars). Set loading pre-debounce for responsiveness.
+        querySubject
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .removeDuplicates()
-            .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
-            .sink { [weak self] trimmed in
+            .handleEvents(receiveOutput: { [weak self] trimmed in
                 guard let self else { return }
-
                 if trimmed.isEmpty {
-                    self.reset()
+                    self.cancelAndClear()
                 } else if trimmed.count >= 3 {
+                    self.error = nil
+                    self.isLoading = true
+                }
+            })
+            .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if !self.isQueryShort {
                     self.search(reset: true, trigger: .debounce)
                 }
             }
             .store(in: &cancellables)
+    }
+
+    // MARK: - View State
+    public enum SearchViewState {
+        case idle // no query yet or too short
+        case loading
+        case error(Error)
+        case empty // valid query but no results
+        case content(items: [Movie], isLoadingNext: Bool)
+    }
+
+    public var state: SearchViewState {
+        switch true {
+        case error != nil:
+            return .error(error!)
+        case isLoading:
+            return .loading
+        case items.isEmpty && isQueryShort:
+            return .idle
+        case items.isEmpty:
+            return .empty
+        default:
+            return .content(items: items, isLoadingNext: isLoadingNext)
+        }
     }
 
     public func search(reset: Bool = true, trigger: Trigger) {
@@ -61,11 +96,11 @@ public final class SearchViewModel: ObservableObject {
             return
         }
         if trigger == .debounce {
-            guard trimmed.count >= 3 else { return }
+            guard !isQueryShort else { return }
         }
         let next = reset ? 1 : page + 1
         if reset {
-            performFullReset()
+            prepareForNewSearch()
         } else {
             guard !isLoadingNext, next <= totalPages else { return }
             isLoadingNext = true
@@ -84,11 +119,17 @@ public final class SearchViewModel: ObservableObject {
                 guard let self else { return }
                 self.page = page.page
                 self.totalPages = page.totalPages
-
-                // Simply append the new movies
-                self.items.append(contentsOf: page.items)
+                // Prevent duplicates across pages for a single query
+                let existing = Set(self.items.map(\.id))
+                let newItems = page.items.filter { !existing.contains($0.id) }
+                self.items.append(contentsOf: newItems)
             })
     }
+
+    public var canLoadMore: Bool { page < totalPages }
+
+    public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
+    public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
 
     public func loadNextIfNeeded(currentItem: Movie?) {
         guard let id = currentItem?.id,
@@ -97,32 +138,28 @@ public final class SearchViewModel: ObservableObject {
         search(reset: false, trigger: .submit)
     }
 
-    public var canLoadMore: Bool { page < totalPages }
-
-    public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
-    public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
-
-
-    /// Performs a full state reset for fresh searches
-    private func performFullReset() {
-        // Full reset: clear everything and start fresh
-        isLoading = true
-        error = nil
-        items.removeAll()
-        page = 1  // Reset pagination counters
-        totalPages = 1
-    }
-
-    private func reset() {
+    /// Resets state and manages loading status
+    private func resetState(startLoading: Bool = false) {
         // Cancel any in-flight requests to prevent memory leaks
         currentRequest?.cancel()
         currentRequest = nil
 
+        // Reset all state
+        isLoading = startLoading
+        isLoadingNext = false
+        error = nil
         items.removeAll()
         page = 1
         totalPages = 1
-        isLoading = false
-        isLoadingNext = false
-        error = nil
+    }
+
+    /// Prepares state for a new search (shows loading)
+    private func prepareForNewSearch() {
+        resetState(startLoading: true)
+    }
+
+    /// Cancels ongoing requests and clears state (stops loading)
+    private func cancelAndClear() {
+        resetState(startLoading: false)
     }
 }

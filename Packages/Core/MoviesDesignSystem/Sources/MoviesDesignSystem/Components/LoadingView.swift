@@ -32,11 +32,7 @@ public struct LoadingView: View {
         .tint(Color.primary)
         .foregroundStyle(Color.primary)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-#if canImport(UIKit)
-        .background(Color(.systemGray4))
-#else
-        .background(Color.gray.opacity(0.2))
-#endif
+        .background(Color.secondary.opacity(0.4))
     }
 }
 

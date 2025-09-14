@@ -5,7 +5,6 @@
 //  Centralized UIAppearance configuration for NavigationBar and TabBar
 //
 
-import SwiftUI
 #if canImport(UIKit)
 import UIKit
 #endif

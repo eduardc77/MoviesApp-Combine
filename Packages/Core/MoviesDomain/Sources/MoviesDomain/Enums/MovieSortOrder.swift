@@ -8,7 +8,7 @@
 import Foundation
 
 /// Canonical sort orders supported by the app for movie lists
-public enum MovieSortOrder: CaseIterable, Identifiable, Sendable {
+public enum MovieSortOrder: String, CaseIterable, Identifiable, Sendable {
     case ratingAscending
     case ratingDescending
     case releaseDateAscending

@@ -18,7 +18,7 @@ public struct SearchBarView: View {
 
     public init(
         text: Binding<String>,
-        placeholder: String = "Search movies...",
+        placeholder: String = String(localized: .DesignSystemL10n.searchPlaceholder),
         onSubmit: @escaping () -> Void
     ) {
         self._text = text
@@ -50,15 +50,11 @@ public struct SearchBarView: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.tertiary)
                 }
-                .accessibilityLabel("Clear search text")
+                .accessibilityLabel(String(localized: .DesignSystemL10n.searchClearA11y))
             }
         }
         .padding(5)
-        #if canImport(UIKit)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemGray6)))
-        #else
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.gray.opacity(0.2)))
-        #endif
+        .background(Color.secondary.opacity(0.4))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 #if canImport(UIKit)

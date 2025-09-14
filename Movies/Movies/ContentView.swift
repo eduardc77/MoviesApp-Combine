@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import MoviesDomain
-import MoviesPersistence
 
 struct ContentView: View {
     var body: some View {

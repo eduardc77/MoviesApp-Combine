@@ -4,6 +4,25 @@ import Combine
 @testable import MoviesDomain
 @testable import MoviesPersistence
 
+@MainActor
+private final class InMemoryFavoritesLocalDataSource: FavoritesLocalDataSourceProtocol {
+    private var ids = Set<Int>()
+    func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> {
+        Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+    func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
+        ids.insert(movieId)
+        return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+    func removeFromFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
+        ids.remove(movieId)
+        return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+    func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
+        Just(ids.contains(movieId)).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+}
+
 private final class RepoMock: MovieRepositoryProtocol {
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> { fatalError() }
     func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> { fatalError() }
@@ -20,7 +39,7 @@ private final class RepoMock: MovieRepositoryProtocol {
 final class FavoritesViewModelTests: XCTestCase {
     func testReloadReflectsFavoritesAfterToggle() {
         let repo = RepoMock()
-        let store = FavoritesStore()
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource())
         let vm = FavoritesViewModel(repository: repo, favoritesStore: store)
 
         // Initially empty

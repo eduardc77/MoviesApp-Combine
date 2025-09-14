@@ -1,11 +1,11 @@
 //
-//  AppEnvironment.swift
+//  AppDependencies.swift
 //  Movies
 //
 //  Created by User on 9/10/25.
 //
 
-import Foundation
+import Observation
 import MoviesNetwork
 import MoviesPersistence
 import MoviesDomain
@@ -15,14 +15,15 @@ import MoviesUtilities
 /// Handles configuration loading and dependency wiring
 @MainActor
 @Observable
-public final class AppEnvironment {
+public final class AppDependencies {
+
     // MARK: - Public Dependencies
 
     /// Repository for movie operations
     public let movieRepository: MovieRepositoryProtocol
 
     /// Store for managing favorite movies (reactive layer with persistence)
-    public let favoritesStore: FavoritesStore
+    public let favorites: any FavoritesStoreProtocol
 
     /// Networking configuration (exposed for debugging)
     public let networkingConfig: NetworkingConfig
@@ -32,10 +33,10 @@ public final class AppEnvironment {
     /// Initializes the app environment
     public init() {
         self.networkingConfig = TMDBNetworkingConfig.config
-        self.movieRepository = TMDBMovieRepository.development()
+        self.movieRepository = MovieRepository.development()
 
         // Initialize store (reactive layer)
-        self.favoritesStore = FavoritesStore()
+        self.favorites = FavoritesStore()
     }
 
     /// Convenience initializer for testing with custom dependencies
@@ -47,7 +48,7 @@ public final class AppEnvironment {
         networkingConfig: NetworkingConfig
     ) {
         self.movieRepository = movieRepository
-        self.favoritesStore = FavoritesStore()
+        self.favorites = FavoritesStore()
         self.networkingConfig = networkingConfig
     }
 }
