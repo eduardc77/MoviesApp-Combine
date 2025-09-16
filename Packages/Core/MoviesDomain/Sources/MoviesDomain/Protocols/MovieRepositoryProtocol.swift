@@ -6,6 +6,7 @@
 //
 
 import Combine
+import SharedModels
 
 /// Protocol defining the core movie repository operations
 public protocol MovieRepositoryProtocol: Sendable {

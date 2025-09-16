@@ -6,21 +6,21 @@
 //
 
 import SwiftUI
-import MoviesDomain
+import SharedModels
 
-/// Reusable toolbar + menu for sorting movie lists
-public struct SortToolbarModifier: ViewModifier {
+/// Generic reusable toolbar + menu for sorting any list
+public struct SortToolbarModifier<Option: SortOption>: ViewModifier {
     @Binding private var isPresented: Bool
-    private let currentSortOrder: MovieSortOrder?
-    private let onSelect: (MovieSortOrder) -> Void
+    private let currentSortOption: Option?
+    private let onSelect: (Option) -> Void
 
     public init(
         isPresented: Binding<Bool>,
-        currentSortOrder: MovieSortOrder?,
-        onSelect: @escaping (MovieSortOrder) -> Void
+        currentSortOption: Option?,
+        onSelect: @escaping (Option) -> Void
     ) {
         self._isPresented = isPresented
-        self.currentSortOrder = currentSortOrder
+        self.currentSortOption = currentSortOption
         self.onSelect = onSelect
     }
 
@@ -36,34 +36,31 @@ public struct SortToolbarModifier: ViewModifier {
                 }
             }
             .confirmationDialog(String(localized: .DesignSystemL10n.sortTitle), isPresented: $isPresented) {
-                ForEach(MovieSortOrder.allCases) { order in
+                ForEach(Option.allCases) { option in
                     Button {
-                        onSelect(order)
+                        onSelect(option)
                         isPresented = false  // Auto-dismiss after selection
                     } label: {
-                        Text("\(currentSortOrder == order ? "✓" : "") \(String(localized: order.labelKey))")
-                            .foregroundStyle(.white)
-                            .tint(.white)
+                        Text("\(currentSortOption?.id == option.id ? "✓" : "") \(option.displayName)")
                     }
-                    .foregroundStyle(.white)
-                    .tint(.white)
+                    .tint(Color.primary)
                 }
                 Button(String(localized: .DesignSystemL10n.cancel), role: .cancel) { }
+                    .tint(Color.primary)
             }
-            .tint(.white)
     }
 }
 
 public extension View {
-    /// Attach a standard sort toolbar for movie lists
-    func movieSortToolbar(
+    /// Attach a generic sort toolbar for any sortable content
+    func sortToolbar<Option: SortOption>(
         isPresented: Binding<Bool>,
-        currentSortOrder: MovieSortOrder?,
-        onSelect: @escaping (MovieSortOrder) -> Void
+        currentSortOption: Option?,
+        onSelect: @escaping (Option) -> Void
     ) -> some View {
-        self.modifier(SortToolbarModifier(
+        self.modifier(SortToolbarModifier<Option>(
             isPresented: isPresented,
-            currentSortOrder: currentSortOrder,
+            currentSortOption: currentSortOption,
             onSelect: onSelect
         ))
     }

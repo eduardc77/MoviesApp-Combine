@@ -1,14 +1,15 @@
 //
-//  MoviesUtilitiesTests.swift
-//  MoviesUtilities
+//  ImageURLBuilderTests.swift
+//  MoviesDesignSystem
 //
-//  Created by User on 9/10/25.
+//  Created by User on 9/15/25.
 //
 
 import XCTest
-@testable import MoviesUtilities
+@testable import MoviesDesignSystem
+@testable import MoviesNetwork
 
-final class MoviesUtilitiesTests: XCTestCase {
+final class ImageURLBuilderTests: XCTestCase {
     func testPosterURLBuilder() {
         let config = NetworkingConfig(
             baseURL: URL(string: "https://api.themoviedb.org")!,

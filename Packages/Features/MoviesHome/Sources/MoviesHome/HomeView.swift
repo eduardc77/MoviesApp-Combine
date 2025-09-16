@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MoviesNavigation
-import MoviesPersistence
+import MoviesData
 import MoviesDomain
 import MoviesDesignSystem
 
@@ -68,7 +68,8 @@ public struct HomeView: View {
                             onFavoriteToggle: { viewModel.toggleFavorite($0.id) },
                             isFavorite: { viewModel.isFavorite($0.id) },
                             onLoadNext: { viewModel.load(reset: false) },
-                            showLoadingOverlay: viewModel.isLoadingNext
+                            showLoadingOverlay: viewModel.isLoadingNext,
+                            onRefresh: { await viewModel.refresh() }
                         )
                         .tag(category)
                     }
@@ -83,9 +84,9 @@ public struct HomeView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
-        .movieSortToolbar(
+        .sortToolbar(
             isPresented: $showingSortSheet,
-            currentSortOrder: viewModel.sortOrder
+            currentSortOption: viewModel.sortOrder
         ) { order in
             viewModel.setSortOrder(order)
         }

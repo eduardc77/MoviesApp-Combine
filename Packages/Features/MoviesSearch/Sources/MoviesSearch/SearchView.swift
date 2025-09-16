@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MoviesNavigation
-import MoviesPersistence
+import MoviesData
 import MoviesDomain
 import MoviesDesignSystem
 
@@ -56,7 +56,8 @@ public struct SearchView: View {
                              onFavoriteToggle: { item in viewModel.toggleFavorite(item.id) },
                              isFavorite: { item in viewModel.isFavorite(item.id) },
                              onLoadNext: { viewModel.search(reset: false, trigger: .submit) },
-                             showLoadingOverlay: viewModel.isLoadingNext)
+                             showLoadingOverlay: viewModel.isLoadingNext,
+                             onRefresh: { await viewModel.refresh() })
             }
         }
         .navigationTitle(Text(.SearchL10n.title))

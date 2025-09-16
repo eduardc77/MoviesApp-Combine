@@ -1,3 +1,10 @@
+//
+//  LocalizedStringResource+Home.swift
+//  MoviesHome
+//
+//  Created by User on 9/10/25.
+//
+
 import Foundation
 
 public extension LocalizedStringResource {

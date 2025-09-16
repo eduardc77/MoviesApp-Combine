@@ -17,17 +17,25 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/onevcat/Kingfisher.git", from: "7.0.0"),
-        .package(path: "../MoviesUtilities")
+        .package(path: "../MoviesDomain"),
+        .package(path: "../MoviesNetwork")
     ],
     targets: [
         .target(
             name: "MoviesDesignSystem",
             dependencies: [
                 "Kingfisher",
-                "MoviesUtilities"
+                "MoviesDomain",
+                "MoviesNetwork"
             ],
             resources: [
                 .process("Resources")
+            ]
+        ),
+        .testTarget(
+            name: "MoviesDesignSystemTests",
+            dependencies: [
+                "MoviesDesignSystem"
             ]
         )
     ]

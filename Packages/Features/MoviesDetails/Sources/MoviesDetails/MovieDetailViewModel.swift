@@ -6,7 +6,6 @@
 import Foundation
 import Combine
 import MoviesDomain
-import MoviesPersistence
 
 @MainActor
 @Observable
@@ -35,9 +34,14 @@ public final class MovieDetailViewModel {
     }
 
     public var state: DetailViewState {
-        if let error { return .error(error) }
-        if let movie = movie { return .content(movie) }
-        return .loading
+        switch true {
+        case error != nil:
+            return .error(error!)
+        case movie != nil:
+            return .content(movie!)
+        default:
+            return .loading
+        }
     }
 
     public func fetch() {

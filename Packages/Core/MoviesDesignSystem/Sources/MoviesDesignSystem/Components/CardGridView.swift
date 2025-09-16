@@ -2,11 +2,12 @@
 //  CardGridView.swift
 //  MoviesDesignSystem
 //
-//  Reusable grid for displaying CardDisplayable items using GenericCardView
+//  Created by User on 9/10/25.
 //
 
 import SwiftUI
 
+/// Reusable grid for displaying CardDisplayable items using GenericCardView
 public struct CardGridView<Item: CardDisplayable>: View {
     private let items: [Item]
     private let onTap: (Item) -> Void
@@ -14,8 +15,11 @@ public struct CardGridView<Item: CardDisplayable>: View {
     private let isFavorite: (Item) -> Bool
     private let onLoadNext: (() -> Void)?
     private let showLoadingOverlay: Bool
+    private let onRefresh: (() async -> Void)?
+    @Binding private var shouldScrollToTop: Bool
 
     @State private var hasTriggeredLoadNext = false
+    @State private var hasScrolledToTop = false
 
     private let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 140, maximum: 220), spacing: 8, alignment: .top)
@@ -27,7 +31,9 @@ public struct CardGridView<Item: CardDisplayable>: View {
         onFavoriteToggle: @escaping (Item) -> Void,
         isFavorite: @escaping (Item) -> Bool,
         onLoadNext: (() -> Void)? = nil,
-        showLoadingOverlay: Bool = false
+        showLoadingOverlay: Bool = false,
+        onRefresh: (() async -> Void)? = nil,
+        shouldScrollToTop: Binding<Bool> = .constant(false)
     ) {
         self.items = items
         self.onTap = onTap
@@ -35,38 +41,64 @@ public struct CardGridView<Item: CardDisplayable>: View {
         self.isFavorite = isFavorite
         self.onLoadNext = onLoadNext
         self.showLoadingOverlay = showLoadingOverlay
+        self.onRefresh = onRefresh
+        self._shouldScrollToTop = shouldScrollToTop
     }
 
     public var body: some View {
-        ScrollView {
-            LazyVGrid(columns: columns) {
-                ForEach(items, id: \.idKey) { item in
-                    GenericCardView(
-                        item: item,
-                        onTap: { onTap(item) },
-                        onFavoriteToggle: { onFavoriteToggle(item) },
-                        isFavorite: { isFavorite(item) }
-                    )
-                    .onAppear {
-                        if let index = items.firstIndex(where: { $0.idKey == item.idKey }),
-                           index >= items.count - 3 && !hasTriggeredLoadNext {
-                            hasTriggeredLoadNext = true
-                            onLoadNext?()
+        ScrollViewReader { scrollProxy in
+            ScrollView {
+                LazyVGrid(columns: columns) {
+                    ForEach(items, id: \.idKey) { item in
+                        GenericCardView(
+                            item: item,
+                            onTap: { onTap(item) },
+                            onFavoriteToggle: { onFavoriteToggle(item) },
+                            isFavorite: { isFavorite(item) }
+                        )
+                        .transition(.asymmetric(
+                            insertion: .scale(scale: 0.8).combined(with: .opacity),
+                            removal: .scale(scale: 0.8).combined(with: .opacity)
+                        ))
+                        .onAppear {
+                            if let index = items.firstIndex(where: { $0.idKey == item.idKey }),
+                               index >= items.count - 3 && !hasTriggeredLoadNext {
+                                hasTriggeredLoadNext = true
+                                onLoadNext?()
+                            }
                         }
                     }
                 }
-            }
-            .padding(10)
+                .animation(.spring(duration: 0.4, bounce: 0.2), value: items.count)
+                .padding(10)
+                .id("grid-top") // Anchor for scroll-to-top
 
-            if showLoadingOverlay {
-                footerLoadingIndicator
+                if showLoadingOverlay {
+                    footerLoadingIndicator
+                }
             }
+            .refreshable {
+                if let onRefresh {
+                    await onRefresh()
+                }
+            }
+            .scrollDismissesKeyboard(.immediately)
+            .onChange(of: items.count) { _, _ in
+                hasTriggeredLoadNext = false // Reset when items count changes
+            }
+            .onChange(of: shouldScrollToTop) { _, shouldScroll in
+                if shouldScroll && !hasScrolledToTop {
+                    hasScrolledToTop = true
+                    scrollProxy.scrollTo("grid-top", anchor: .top)
+                    // Reset both local state and binding after animation completes
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                        hasScrolledToTop = false
+                        shouldScrollToTop = false // Reset the binding
+                    }
+                }
+            }
+            .background(Color.secondary.opacity(0.4))
         }
-        .scrollDismissesKeyboard(.immediately)
-        .onChange(of: items.count) { _, _ in
-            hasTriggeredLoadNext = false // Reset when items count changes
-        }
-        .background(Color.secondary.opacity(0.4))
     }
 
     var footerLoadingIndicator: some View {

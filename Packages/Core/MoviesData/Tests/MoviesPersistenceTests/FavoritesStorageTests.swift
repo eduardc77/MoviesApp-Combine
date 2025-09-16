@@ -8,7 +8,7 @@
 import XCTest
 import Combine
 import SwiftData
-@testable import MoviesPersistence
+@testable import MoviesData
 
 final class FavoritesStorageTests: XCTestCase {
 

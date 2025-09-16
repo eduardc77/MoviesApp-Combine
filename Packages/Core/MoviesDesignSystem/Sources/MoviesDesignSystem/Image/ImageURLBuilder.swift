@@ -1,11 +1,12 @@
 //
 //  ImageURLBuilder.swift
-//  MoviesUtilities
+//  MoviesDesignSystem
 //
 //  Created by User on 9/10/25.
 //
 
 import Foundation
+import MoviesNetwork
 
 /// Build TMDB image URLs using configured base URLs
 public enum ImageURLBuilder {

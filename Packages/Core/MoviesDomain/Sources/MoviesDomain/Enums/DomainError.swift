@@ -40,5 +40,3 @@ public enum DomainError: Error, LocalizedError, Sendable {
         }
     }
 }
-
-

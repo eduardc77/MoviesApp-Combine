@@ -1,6 +1,6 @@
 //
 //  FavoritesStore.swift
-//  MoviesPersistence
+//  MoviesData
 //
 //  Created by User on 9/10/25.
 //
@@ -8,11 +8,12 @@
 import Foundation
 import Combine
 import MoviesDomain
+import MoviesLogging
 
 @MainActor
 @Observable
 public final class FavoritesStore {
-    /// Repository for favorites (local SwiftData now, remote later if needed)
+    /// Repository for favorites
     @ObservationIgnored private let repository: FavoritesRepositoryProtocol
     /// Reactive set of favorite movie IDs
     public var favoriteMovieIds: Set<Int> = []
@@ -31,9 +32,7 @@ public final class FavoritesStore {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { completion in
                 if case .failure(let error) = completion {
-                    #if DEBUG
-                    print("Failed to load favorites: \(error)")
-                    #endif
+                    AppLog.persistence.error("Failed to load favorites: \(String(describing: error))")
                 }
             }, receiveValue: { [weak self] favorites in
                 self?.favoriteMovieIds = favorites
@@ -53,9 +52,7 @@ public final class FavoritesStore {
                 .sink(receiveCompletion: { [weak self] completion in
                     guard let self else { return }
                     if case .failure(let error) = completion {
-                        #if DEBUG
-                        print("Failed to remove favorite: \(error)")
-                        #endif
+                        AppLog.persistence.error("Failed to remove favorite: \(String(describing: error))")
                         // Revert optimistic update
                         self.favoriteMovieIds.insert(movieId)
                     }
@@ -71,9 +68,7 @@ public final class FavoritesStore {
                 .sink(receiveCompletion: { [weak self] completion in
                     guard let self else { return }
                     if case .failure(let error) = completion {
-                        #if DEBUG
-                        print("Failed to add favorite: \(error)")
-                        #endif
+                        AppLog.persistence.error("Failed to add favorite: \(String(describing: error))")
                         // Revert optimistic update
                         self.favoriteMovieIds.remove(movieId)
                     }

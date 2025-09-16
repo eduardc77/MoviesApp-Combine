@@ -1,3 +1,10 @@
+//
+//  LoadingView.swift
+//  MoviesDesignSystem
+//
+//  Created by User on 9/10/25.
+//
+
 import SwiftUI
 
 /// A reusable loading view component with consistent styling

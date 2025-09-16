@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import SharedModels
 
 /// Canonical sort orders supported by the app for movie lists
-public enum MovieSortOrder: String, CaseIterable, Identifiable, Sendable {
+public enum MovieSortOrder: String, CaseIterable, Identifiable, Sendable, SortOption {
     case ratingAscending
     case ratingDescending
     case releaseDateAscending
@@ -24,6 +25,11 @@ public enum MovieSortOrder: String, CaseIterable, Identifiable, Sendable {
         case .releaseDateAscending: return .DomainL10n.releaseDateAscending
         case .releaseDateDescending: return .DomainL10n.releaseDateDescending
         }
+    }
+
+    /// Display name for the SortOption protocol
+    public var displayName: String {
+        String(localized: labelKey)
     }
 
     /// TMDB server-side sort parameter value for endpoints that support it

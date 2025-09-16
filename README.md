@@ -71,11 +71,12 @@ A modern, performant iOS movies app built with SwiftUI, Combine, and clean archi
 Movies-App/
 ├── Packages/
 │   ├── Core/
-│   │   ├── MoviesDesignSystem    # Reusable UI components
-│   │   ├── MoviesDomain         # Business models & protocols
-│   │   ├── MoviesNetwork        # API client & data transfer
-│   │   ├── MoviesPersistence    # Local storage & favorites
-│   │   └── MoviesUtilities      # Shared utilities & helpers
+│   │   ├── MoviesShared         # Shared models & core types
+│   │   ├── MoviesDesignSystem  # Reusable UI components
+│   │   ├── MoviesDomain        # Business logic & protocols
+│   │   ├── MoviesNetwork       # API client & data transfer
+│   │   ├── MoviesData          # Data layer (repositories, mappers)
+│   │   └── MoviesUtilities     # Shared utilities & helpers
 │   └── Features/
 │       ├── MoviesHome          # Home screen & movie discovery
 │       ├── MoviesSearch        # Search functionality

@@ -15,11 +15,14 @@ let package = Package(
             targets: ["MoviesDomain"]
         ),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(path: "../MoviesShared"),
+        .package(path: "../MoviesUtilities"),
+    ],
     targets: [
         .target(
             name: "MoviesDomain",
-            dependencies: [],
+            dependencies: [.product(name: "SharedModels", package: "MoviesShared"), .product(name: "DateUtilities", package: "MoviesUtilities")],
             resources: [
                 .process("Resources")
             ]

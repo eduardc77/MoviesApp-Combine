@@ -1,16 +1,17 @@
 //
 //  MovieRepository.swift
-//  MoviesNetwork
+//  MoviesData
 //
-//  Created by User on 9/10/25.
+//  Created by User on 9/16/25.
 //
 
 import Combine
+import SharedModels
 import MoviesDomain
-import MoviesUtilities
-import Foundation
+import MoviesNetwork
 
-/// Concrete implementation of MovieRepository using TMDB API
+/// Repository that bridges network DTOs to domain models
+/// Implements the data access layer for movie operations
 public final class MovieRepository: MovieRepositoryProtocol {
     private let remoteDataSource: MovieRemoteDataSourceProtocol
 
@@ -20,36 +21,48 @@ public final class MovieRepository: MovieRepositoryProtocol {
 
     public func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> {
         return remoteDataSource.fetchMovies(type: type)
+            .map { DTOMapper.toDomain($0.results) }
             .mapError { MovieRepository.mapToDomainError($0) }
             .eraseToAnyPublisher()
     }
 
     public func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> {
         return remoteDataSource.fetchMovies(type: type, page: page)
+            .map { (response: MoviesResponseDTO) in
+                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
+            }
             .mapError { MovieRepository.mapToDomainError($0) }
             .eraseToAnyPublisher()
     }
 
     public func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error> {
         return remoteDataSource.fetchMovies(type: type, page: page, sortBy: sortBy?.tmdbSortValue)
+            .map { (response: MoviesResponseDTO) in
+                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
+            }
             .mapError { MovieRepository.mapToDomainError($0) }
             .eraseToAnyPublisher()
     }
 
     public func searchMovies(query: String) -> AnyPublisher<[Movie], Error> {
         return remoteDataSource.searchMovies(query: query)
+            .map { DTOMapper.toDomain($0.results) }
             .mapError { MovieRepository.mapToDomainError($0) }
             .eraseToAnyPublisher()
     }
 
     public func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> {
         return remoteDataSource.searchMovies(query: query, page: page)
+            .map { (response: MoviesResponseDTO) in
+                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
+            }
             .mapError { MovieRepository.mapToDomainError($0) }
             .eraseToAnyPublisher()
     }
 
     public func fetchMovieDetails(id: Int) -> AnyPublisher<MovieDetails, Error> {
         return remoteDataSource.fetchMovieDetails(id: id)
+            .map { DTOMapper.toDomain($0) }
             .mapError { MovieRepository.mapToDomainError($0) }
             .eraseToAnyPublisher()
     }

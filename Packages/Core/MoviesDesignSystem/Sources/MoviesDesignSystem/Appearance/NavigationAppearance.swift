@@ -2,13 +2,14 @@
 //  NavigationAppearance.swift
 //  MoviesDesignSystem
 //
-//  Centralized UIAppearance configuration for NavigationBar and TabBar
+//  Created by User on 9/10/25.
 //
 
 #if canImport(UIKit)
 import UIKit
 #endif
 
+/// Centralized UIAppearance configuration for NavigationBar and TabBar
 public enum NavigationAppearance {
     /// Configure global appearance for NavigationBar, TabBar
     @MainActor public static func configure() {

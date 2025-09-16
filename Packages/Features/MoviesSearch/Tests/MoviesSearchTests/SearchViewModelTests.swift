@@ -7,9 +7,10 @@
 
 import XCTest
 import Combine
+import SharedModels
 @testable import MoviesSearch
 @testable import MoviesDomain
-@testable import MoviesPersistence
+@testable import MoviesData
 
 private final class RepoMock: MovieRepositoryProtocol {
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> { fatalError() }
@@ -17,7 +18,7 @@ private final class RepoMock: MovieRepositoryProtocol {
     func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error> { fatalError() }
     func searchMovies(query: String) -> AnyPublisher<[Movie], Error> { fatalError() }
     func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> {
-        let mockMovies = (0..<5).map { index -> Movie in
+        let mockMovies = (0..<5).map { index in
             let movieId = 200 + (page - 1) * 20 + index
             let title = "Search Page \(page) Result \(index + 1) for '\(query)'"
             let overview = "Search page \(page) overview \(index + 1)"
@@ -26,7 +27,6 @@ private final class RepoMock: MovieRepositoryProtocol {
             let releaseDate = "2023-04-01"
             let voteAverage = 6.0 + Double(page) * 0.3 + Double(index) * 0.1
             let voteCount = 70 + page * 15 + index * 5
-            let genreIds: [Int] = [35]
 
             return Movie(
                 id: movieId,
@@ -37,7 +37,6 @@ private final class RepoMock: MovieRepositoryProtocol {
                 releaseDate: releaseDate,
                 voteAverage: voteAverage,
                 voteCount: voteCount,
-                genreIds: genreIds,
                 genres: nil
             )
         }

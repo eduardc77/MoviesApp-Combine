@@ -1,8 +1,15 @@
+//
+//  FavoritesStoreTests.swift
+//  MoviesDataTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 import Combine
-@testable import MoviesPersistence
+@testable import MoviesData
 
-private final class LocalDataSourceMock: FavoritesLocalDataSourceProtocol {
+private final class LocalDataSourceMock: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
     var ids: Set<Int> = []
     var shouldFail = false
 

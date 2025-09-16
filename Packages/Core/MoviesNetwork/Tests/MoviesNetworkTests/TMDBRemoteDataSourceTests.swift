@@ -1,7 +1,14 @@
+//
+//  TMDBRemoteDataSourceTests.swift
+//  MoviesNetworkTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 import Combine
+import SharedModels
 @testable import MoviesNetwork
-@testable import MoviesDomain
 
 private final class NetworkingClientMock: TMDBNetworkingClientProtocol, @unchecked Sendable {
     nonisolated(unsafe) var requestHandler: ((EndpointProtocol) -> AnyPublisher<Any, Error>)?
@@ -20,18 +27,19 @@ private final class NetworkingClientMock: TMDBNetworkingClientProtocol, @uncheck
 final class TMDBRemoteDataSourceTests: XCTestCase {
     private var cancellables = Set<AnyCancellable>()
 
-    func test_fetchMovies_mapsDTOsToDomain() {
+    func test_fetchMovies_returnsDTOs() {
         let client = NetworkingClientMock()
+        let expectedDTO = MoviesResponseDTO(results: [MovieDTO(id: 1, title: "A", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 7.0, voteCount: 10, genreIds: [1], genres: nil)], page: 1, totalPages: 1, totalResults: 1)
         client.requestHandler = { endpoint in
-            let dto = MoviesResponseDTO(results: [MovieDTO(id: 1, title: "A", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 7.0, voteCount: 10, genreIds: [1], genres: nil)], page: 1, totalPages: 1, totalResults: 1)
-            return Just(dto).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
+            return Just(expectedDTO).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
         let sut = MovieRemoteDataSource(networkingClient: client)
 
-        let exp = expectation(description: "mapped")
-        sut.fetchMovies(type: .nowPlaying)
-            .sink(receiveCompletion: { _ in }, receiveValue: { movies in
-                XCTAssertEqual(movies.first?.id, 1)
+        let exp = expectation(description: "dto returned")
+        sut.fetchMovies(type: .nowPlaying, page: 1)
+            .sink(receiveCompletion: { _ in }, receiveValue: { response in
+                XCTAssertEqual(response.results.first?.id, 1)
+                XCTAssertEqual(response.page, 1)
                 exp.fulfill()
             })
             .store(in: &cancellables)
@@ -39,19 +47,19 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
 
-    func testSearchMoviesPaginationMapsToMoviePage() {
+    func testSearchMoviesReturnsDTO() {
         let client = NetworkingClientMock()
+        let expectedDTO = MoviesResponseDTO(results: [], page: 2, totalPages: 5, totalResults: 100)
         client.requestHandler = { endpoint in
-            let dto = MoviesResponseDTO(results: [], page: 2, totalPages: 5, totalResults: 100)
-            return Just(dto).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
+            return Just(expectedDTO).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
         let sut = MovieRemoteDataSource(networkingClient: client)
 
-        let exp = expectation(description: "page")
+        let exp = expectation(description: "dto returned")
         sut.searchMovies(query: "q", page: 2)
-            .sink(receiveCompletion: { _ in }, receiveValue: { page in
-                XCTAssertEqual(page.page, 2)
-                XCTAssertEqual(page.totalPages, 5)
+            .sink(receiveCompletion: { _ in }, receiveValue: { response in
+                XCTAssertEqual(response.page, 2)
+                XCTAssertEqual(response.totalPages, 5)
                 exp.fulfill()
             })
             .store(in: &cancellables)
@@ -59,15 +67,15 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
 
-    func testFetchMovieDetailsMapsDTOToDomain() {
+    func testFetchMovieDetailsReturnsDTO() {
         let client = NetworkingClientMock()
+        let expectedDTO = MovieDetailsDTO(id: 9, title: "X", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 6.5, voteCount: 5, runtime: 100, genres: [GenreDTO(id: 1, name: "Action")], tagline: nil)
         client.requestHandler = { endpoint in
-            let dto = MovieDetailsDTO(id: 9, title: "X", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 6.5, voteCount: 5, runtime: 100, genres: [GenreDTO(id: 1, name: "Action")], tagline: nil)
-            return Just(dto).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
+            return Just(expectedDTO).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
         let sut = MovieRemoteDataSource(networkingClient: client)
 
-        let exp = expectation(description: "mapped details")
+        let exp = expectation(description: "dto returned")
         sut.fetchMovieDetails(id: 9)
             .sink(receiveCompletion: { _ in }, receiveValue: { details in
                 XCTAssertEqual(details.id, 9)

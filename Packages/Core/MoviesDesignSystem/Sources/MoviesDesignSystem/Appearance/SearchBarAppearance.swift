@@ -2,13 +2,14 @@
 //  SearchBarAppearance.swift
 //  MoviesDesignSystem
 //
-//  Centralized UIAppearance configuration for SearchBar
+//  Created by User on 9/10/25.
 //
 
 #if canImport(UIKit)
 import UIKit
 #endif
 
+/// Centralized UIAppearance configuration for SearchBar
 public enum SearchBarAppearance {
     /// Configure global appearance for SearchBar
     @MainActor public static func configure() {

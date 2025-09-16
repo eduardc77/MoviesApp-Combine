@@ -8,7 +8,7 @@
 import SwiftUI
 import MoviesDesignSystem
 import MoviesDomain
-import MoviesPersistence
+import MoviesData
 import MoviesNavigation
 
 /// Main view for displaying favorite movies
@@ -48,20 +48,25 @@ public struct FavoritesView: View {
                 CardGridView(items: viewModel.items,
                              onTap: { item in appRouter.navigateToMovieDetails(movieId: item.id) },
                              onFavoriteToggle: { item in viewModel.toggleFavorite(item.id) },
-                             isFavorite: { item in viewModel.isFavorite(item.id) })
+                             isFavorite: { item in viewModel.isFavorite(item.id) },
+                             onRefresh: { await viewModel.refresh() },
+                             shouldScrollToTop: $viewModel.didChangeSortOrder)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.secondary.opacity(0.4))
         .navigationTitle(Text(.FavoritesL10n.title))
-        #if os(iOS)
+#if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .movieSortToolbar(
+#endif
+        .sortToolbar(
             isPresented: $showingSortSheet,
-            currentSortOrder: viewModel.sortOrder
+            currentSortOption: viewModel.sortOrder
         ) { order in
             viewModel.setSortOrder(order)
+        }
+        .task(id: viewModel.favoritesStore.favoriteMovieIds) {
+            viewModel.favoritesDidChange()
         }
     }
 }

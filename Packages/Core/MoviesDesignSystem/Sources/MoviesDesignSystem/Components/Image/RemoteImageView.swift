@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Kingfisher
-import MoviesUtilities
+import MoviesNetwork
 
 /// Simple, performant remote image view using Kingfisher
 public struct RemoteImageView: View {

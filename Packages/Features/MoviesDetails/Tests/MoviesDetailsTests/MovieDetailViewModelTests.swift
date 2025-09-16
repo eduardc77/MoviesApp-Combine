@@ -7,11 +7,12 @@
 
 import XCTest
 import Combine
+import SharedModels
 @testable import MoviesDetails
 @testable import MoviesDomain
-@testable import MoviesPersistence
+@testable import MoviesData
 
-private final class InMemoryFavoritesLocalDataSource: FavoritesLocalDataSourceProtocol {
+private final class InMemoryFavoritesLocalDataSource: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
     private var ids = Set<Int>()
 
     func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> {

@@ -1,3 +1,10 @@
+//
+//  FavoritesRepository.swift
+//  MoviesData
+//
+//  Created by User on 9/10/25.
+//
+
 import Foundation
 import Combine
 import MoviesDomain
@@ -24,11 +31,8 @@ public final class FavoritesRepository: FavoritesRepositoryProtocol {
         // Simpler: read favorite flag then route.
         localDataSource.isFavorite(movieId: movieId)
             .flatMap { [localDataSource] isFav -> AnyPublisher<Void, Error> in
-                if isFav { return localDataSource.removeFromFavorites(movieId: movieId) }
-                else { return localDataSource.addToFavorites(movieId: movieId) }
+                if isFav { return localDataSource.removeFromFavorites(movieId: movieId) } else { return localDataSource.addToFavorites(movieId: movieId) }
             }
             .eraseToAnyPublisher()
     }
 }
-
-

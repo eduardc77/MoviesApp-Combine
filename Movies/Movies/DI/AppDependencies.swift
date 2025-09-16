@@ -6,10 +6,9 @@
 //
 
 import Observation
-import MoviesNetwork
-import MoviesPersistence
+import MoviesData
 import MoviesDomain
-import MoviesUtilities
+import MoviesNetwork
 
 /// Main dependency injection container for the Movies app
 /// Handles configuration loading and dependency wiring
@@ -52,5 +51,3 @@ public final class AppDependencies {
         self.networkingConfig = networkingConfig
     }
 }
-
-

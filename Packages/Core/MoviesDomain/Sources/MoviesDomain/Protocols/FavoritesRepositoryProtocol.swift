@@ -7,9 +7,8 @@
 
 import Combine
 
-@MainActor
 /// Protocol for managing favorite movies
-public protocol FavoritesRepositoryProtocol {
+public protocol FavoritesRepositoryProtocol: Sendable {
     /// Gets all favorite movie IDs
     func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error>
 

@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 import MoviesDomain
-import MoviesPersistence
 
 @MainActor
 @Observable
@@ -87,6 +86,12 @@ public final class SearchViewModel {
         default:
             return .content(items: items, isLoadingNext: isLoadingNext)
         }
+    }
+
+    /// Clean async refresh method for pull-to-refresh
+    public func refresh() async {
+        guard !query.isEmpty else { return }
+        search(reset: true, trigger: .submit)
     }
 
     public func search(reset: Bool = true, trigger: Trigger) {

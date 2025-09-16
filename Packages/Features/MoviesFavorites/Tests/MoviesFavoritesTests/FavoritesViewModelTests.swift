@@ -1,25 +1,53 @@
+//
+//  FavoritesViewModelTests.swift
+//  MoviesFavoritesTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 import Combine
+import SharedModels
 @testable import MoviesFavorites
 @testable import MoviesDomain
-@testable import MoviesPersistence
+@testable import MoviesData
 
-@MainActor
-private final class InMemoryFavoritesLocalDataSource: FavoritesLocalDataSourceProtocol {
+private class InMemoryFavoritesLocalDataSource: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
     private var ids = Set<Int>()
-    func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> {
-        Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher()
+    private let queue = DispatchQueue(label: "com.movies.favorites.test")
+
+    nonisolated func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> {
+        Future { promise in
+            self.queue.async {
+                promise(.success(self.ids))
+            }
+        }.eraseToAnyPublisher()
     }
-    func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
-        ids.insert(movieId)
-        return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
+
+    nonisolated func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
+        Future { promise in
+            self.queue.async {
+                self.ids.insert(movieId)
+                promise(.success(()))
+            }
+        }.eraseToAnyPublisher()
     }
-    func removeFromFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
-        ids.remove(movieId)
-        return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
+
+    nonisolated func removeFromFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
+        Future { promise in
+            self.queue.async {
+                self.ids.remove(movieId)
+                promise(.success(()))
+            }
+        }.eraseToAnyPublisher()
     }
-    func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
-        Just(ids.contains(movieId)).setFailureType(to: Error.self).eraseToAnyPublisher()
+
+    nonisolated func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
+        Future { promise in
+            self.queue.async {
+                promise(.success(self.ids.contains(movieId)))
+            }
+        }.eraseToAnyPublisher()
     }
 }
 
@@ -58,5 +86,15 @@ final class FavoritesViewModelTests: XCTestCase {
         vm.reload()
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         XCTAssertTrue(vm.items.isEmpty)
+    }
+
+    func testFavoritesStoreIsAccessibleForObservation() {
+        let repo = RepoMock()
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource())
+        let vm = FavoritesViewModel(repository: repo, favoritesStore: store)
+
+        // Verify ViewModel exposes store for View observation
+        XCTAssertNotNil(vm.favoritesStore)
+        XCTAssertTrue(vm.favoritesStore.favoriteMovieIds.isEmpty)
     }
 }

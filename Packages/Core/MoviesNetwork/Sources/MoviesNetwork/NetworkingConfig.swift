@@ -1,6 +1,6 @@
 //
 //  NetworkingConfig.swift
-//  MoviesUtilities
+//  MoviesNetwork
 //
 //  Created by User on 9/10/25.
 //

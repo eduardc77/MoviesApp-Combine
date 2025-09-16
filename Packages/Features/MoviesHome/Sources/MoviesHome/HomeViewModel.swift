@@ -7,8 +7,9 @@
 
 import Foundation
 import Combine
+import SharedModels
 import MoviesDomain
-import MoviesPersistence
+import MoviesLogging
 
 @MainActor
 @Observable
@@ -44,18 +45,28 @@ public final class HomeViewModel {
     }
 
     public var state: HomeViewState {
-        if let error { return .error(error) }
-        if isLoading && items.isEmpty { return .loading }
-        if items.isEmpty { return .empty }
-        return .content(items: items, isLoadingNext: isLoadingNext)
+        switch true {
+        case error != nil:
+            return .error(error!)
+        case isLoading && items.isEmpty:
+            return .loading
+        case items.isEmpty:
+            return .empty
+        default:
+            return .content(items: items, isLoadingNext: isLoadingNext)
+        }
     }
 
+    /// Clean async refresh method for pull-to-refresh
+    public func refresh() async {
+        AppLog.home.info("HOME PULL-TO-REFRESH: \(category)")
+        // Reset and reload data
+        load(reset: true)
+    }
 
     public func load(reset: Bool = true) {
         let next = reset ? 1 : page + 1
-#if DEBUG
-        print("HOME REQUEST reset:\(reset) next:\(next) cat:\(category) sort:\(String(describing: sortOrder))")
-#endif
+        AppLog.home.info("HOME REQUEST reset:\(reset) next:\(next) cat:\(category) sort:\(String(describing: self.sortOrder))")
 
         if reset {
             // If a reset load is already in progress, avoid starting another
@@ -84,9 +95,8 @@ public final class HomeViewModel {
                 if case .failure(let err) = completion { self.error = err }
             }, receiveValue: { [weak self] page in
                 guard let self else { return }
-#if DEBUG
-                print("HOME RESPONSE page:\(page.page) items:\(page.items.count)")
-#endif
+
+                AppLog.home.info("HOME RESPONSE page:\(page.page) items:\(page.items.count)")
                 self.page = page.page
                 self.totalPages = page.totalPages
                 let existing = Set(self.items.map(\.id))

@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import MoviesDomain
+import SharedModels
 
 /// Domain-specific endpoints for movie operations
 /// Implements EndpointProtocol for type safety and consistency
@@ -42,23 +42,35 @@ public enum MoviesEndpoints: EndpointProtocol {
             var params = [
                 URLQueryItem(name: "page", value: String(page))
             ]
-            // Add type-specific filtering
-            let currentDate = ISO8601DateFormatter().string(from: Date())
-            switch type {
-            case .nowPlaying:
-                // For now_playing, we can use release_date filtering
-                params.append(URLQueryItem(name: "release_date.lte", value: currentDate))
-                params.append(URLQueryItem(name: "release_date.gte", value: "2024-01-01")) // Recent movies
-            case .popular:
-                params.append(URLQueryItem(name: "sort_by", value: "popularity.desc"))
-            case .topRated:
-                params.append(URLQueryItem(name: "sort_by", value: "vote_average.desc"))
-                params.append(URLQueryItem(name: "vote_count.gte", value: "100")) // Quality filter
-            case .upcoming:
-                let futureDate = ISO8601DateFormatter().string(from: Date().addingTimeInterval(30*24*60*60)) // 30 days from now
-                params.append(URLQueryItem(name: "release_date.gte", value: currentDate))
-                params.append(URLQueryItem(name: "release_date.lte", value: futureDate))
+
+            // Add type-specific discover parameters
+            let typeParams: [String: String] = {
+                switch type {
+                case .nowPlaying:
+                    return [
+                        "release_date.lte": ISO8601DateFormatter().string(from: Date()),
+                        "release_date.gte": "2024-01-01"
+                    ]
+                case .popular:
+                    return ["sort_by": "popularity.desc"]
+                case .topRated:
+                    return [
+                        "sort_by": "vote_average.desc",
+                        "vote_count.gte": "100"
+                    ]
+                case .upcoming:
+                    let futureDate = Date().addingTimeInterval(30*24*60*60)
+                    return [
+                        "release_date.gte": ISO8601DateFormatter().string(from: Date()),
+                        "release_date.lte": ISO8601DateFormatter().string(from: futureDate)
+                    ]
+                }
+            }()
+
+            for (key, value) in typeParams {
+                params.append(URLQueryItem(name: key, value: value))
             }
+
             // Override with custom sort if provided
             if let sortBy = sortBy {
                 params = params.filter { $0.name != "sort_by" }

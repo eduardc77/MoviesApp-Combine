@@ -1,10 +1,18 @@
+//
+//  MovieDetailIntegrationTests.swift
+//  MoviesDetailsTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 import Combine
+import SharedModels
 @testable import MoviesDetails
 @testable import MoviesDomain
 @testable import MoviesNetwork
-@testable import MoviesUtilities
-@testable import MoviesPersistence
+@testable import MoviesLogging
+@testable import MoviesData
 
 private final class URLProtocolStub_Detail: URLProtocol {
     struct Response {
@@ -79,7 +87,7 @@ final class MovieDetailIntegrationTests: XCTestCase {
 }
 
 // Minimal in-memory storage for deterministic favorites behavior
-final class InMemoryFavoritesLocalDataSourceStub: FavoritesLocalDataSourceProtocol {
+final class InMemoryFavoritesLocalDataSourceStub: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
     private var ids = Set<Int>()
     func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error> { Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher() }
     func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> { ids.insert(movieId); return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher() }

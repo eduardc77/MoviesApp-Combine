@@ -17,22 +17,17 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../../Core/MoviesDomain"),
-        .package(path: "../../Core/MoviesNetwork"),
-        .package(path: "../../Core/MoviesPersistence"),
-        .package(path: "../../Core/MoviesNavigation"),
         .package(path: "../../Core/MoviesDesignSystem"),
-        .package(path: "../../Core/MoviesUtilities")
+        .package(path: "../../Core/MoviesUtilities"),
+        .package(path: "../../Core/MoviesNetwork"),
+        .package(path: "../../Core/MoviesData")
     ],
     targets: [
         .target(
             name: "MoviesDetails",
             dependencies: [
                 "MoviesDomain",
-                "MoviesNetwork",
-                "MoviesPersistence",
-                "MoviesNavigation",
-                "MoviesDesignSystem",
-                "MoviesUtilities"
+                "MoviesDesignSystem"
             ],
             resources: [
                 .process("Resources")
@@ -40,7 +35,12 @@ let package = Package(
         ),
         .testTarget(
             name: "MoviesDetailsTests",
-            dependencies: ["MoviesDetails"]
+            dependencies: [
+                "MoviesDetails",
+                .product(name: "MoviesLogging", package: "MoviesUtilities"),
+                "MoviesNetwork",
+                "MoviesData"
+            ]
         )
     ]
 )

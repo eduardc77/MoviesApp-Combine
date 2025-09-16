@@ -1,18 +1,15 @@
 //
-//  MovieType.swift
+//  MovieType+Domain.swift
 //  MoviesDomain
 //
 //  Created by User on 9/10/25.
 //
 
 import Foundation
+import SharedModels
 
-public enum MovieType: String, CaseIterable, Sendable {
-    case nowPlaying = "now_playing"
-    case popular
-    case topRated = "top_rated"
-    case upcoming
-
+// Domain-specific extensions to the shared MovieType
+extension MovieType {
     public var iconSystemName: String {
         switch self {
         case .nowPlaying: return "play.circle"

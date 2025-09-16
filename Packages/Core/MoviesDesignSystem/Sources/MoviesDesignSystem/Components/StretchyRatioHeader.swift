@@ -4,13 +4,12 @@
 //
 //  Created by User on 9/11/25.
 //
-//  A reusable, ratio-driven stretchy header that anchors to the top and
-//  grows when the user pulls down. No fixed heights; the base height is
-//  derived from the provided aspect ratio and the container width.
-//
 
 import SwiftUI
 
+///  A reusable, ratio-driven stretchy header that anchors to the top and
+///  grows when the user pulls down. No fixed heights; the base height is
+///  derived from the provided aspect ratio and the container width.
 public struct StretchyRatioHeader<Content: View>: View {
     private let ratio: CGFloat
     @ViewBuilder private var content: () -> Content

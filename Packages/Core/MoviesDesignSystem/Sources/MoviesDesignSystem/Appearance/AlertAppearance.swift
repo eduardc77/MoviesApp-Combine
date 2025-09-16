@@ -2,13 +2,14 @@
 //  AlertAppearance.swift
 //  MoviesDesignSystem
 //
-//  Centralized UIAppearance configuration for UIAlertController (used by confirmation dialogs)
+//  Created by User on 9/12/25.
 //
 
 #if canImport(UIKit)
 import UIKit
 #endif
 
+/// Centralized UIAppearance configuration for UIAlertController (used by confirmation dialogs)
 public enum AlertAppearance {
     /// Configure global appearance for UIAlertController (confirmation dialogs, alerts)
     @MainActor public static func configure() {

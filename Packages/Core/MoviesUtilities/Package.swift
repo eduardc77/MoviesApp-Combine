@@ -11,19 +11,27 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "MoviesUtilities",
-            targets: ["MoviesUtilities"]
-        )
+            name: "MoviesLogging",
+            targets: ["MoviesLogging"]
+        ),
+        .library(
+            name: "DateUtilities",
+            targets: ["DateUtilities"]
+        ),
     ],
     dependencies: [],
     targets: [
         .target(
-            name: "MoviesUtilities",
-            dependencies: []
+            name: "MoviesLogging",
+            path: "Sources/MoviesLogging"
+        ),
+        .target(
+            name: "DateUtilities",
+            path: "Sources/DateUtilities"
         ),
         .testTarget(
-            name: "MoviesUtilitiesTests",
-            dependencies: ["MoviesUtilities"]
-        )
+            name: "DateUtilitiesTests",
+            dependencies: ["DateUtilities"]
+        ),
     ]
 )

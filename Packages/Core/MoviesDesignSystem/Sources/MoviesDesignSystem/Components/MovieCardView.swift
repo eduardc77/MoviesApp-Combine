@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import MoviesUtilities
 
 /// Protocol for items that can be displayed in a card format
 public protocol CardDisplayable {

@@ -17,22 +17,20 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../../Core/MoviesDomain"),
-        .package(path: "../../Core/MoviesNetwork"),
-        .package(path: "../../Core/MoviesPersistence"),
+        .package(path: "../../Core/MoviesShared"),
+        .package(path: "../../Core/MoviesData"),
         .package(path: "../../Core/MoviesNavigation"),
-        .package(path: "../../Core/MoviesDesignSystem"),
-        .package(path: "../../Core/MoviesUtilities")
+        .package(path: "../../Core/MoviesDesignSystem")
     ],
     targets: [
         .target(
             name: "MoviesSearch",
             dependencies: [
+                .product(name: "SharedModels", package: "MoviesShared"),
                 "MoviesDomain",
-                "MoviesNetwork",
-                "MoviesPersistence",
+                "MoviesData",
                 "MoviesNavigation",
-                "MoviesDesignSystem",
-                "MoviesUtilities"
+                "MoviesDesignSystem"
             ],
             resources: [
                 .process("Resources")

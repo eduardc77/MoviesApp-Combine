@@ -17,20 +17,18 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../../Core/MoviesDomain"),
-        .package(path: "../../Core/MoviesPersistence"),
+        .package(path: "../../Core/MoviesData"),
         .package(path: "../../Core/MoviesNavigation"),
-        .package(path: "../../Core/MoviesDesignSystem"),
-        .package(path: "../../Core/MoviesUtilities")
+        .package(path: "../../Core/MoviesDesignSystem")
     ],
     targets: [
         .target(
             name: "MoviesFavorites",
             dependencies: [
                 "MoviesDomain",
-                "MoviesPersistence",
+                "MoviesData",
                 "MoviesNavigation",
-                "MoviesDesignSystem",
-                "MoviesUtilities"
+                "MoviesDesignSystem"
             ],
             resources: [
                 .process("Resources")

@@ -7,9 +7,10 @@
 
 import XCTest
 import Combine
+import SharedModels
 @testable import MoviesHome
 @testable import MoviesDomain
-@testable import MoviesPersistence
+@testable import MoviesData
 
 private final class RepoMock: MovieRepositoryProtocol {
     let fetchMoviesPageHandler: @Sendable (MovieType, Int) -> MoviePage = { type, page in
@@ -19,8 +20,8 @@ private final class RepoMock: MovieRepositoryProtocol {
 
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> {
         let mockMovies = [
-            Movie(id: 1, title: "Test Movie 1", overview: "Overview 1", posterPath: "/poster1.jpg", backdropPath: "/backdrop1.jpg", releaseDate: "2023-01-01", voteAverage: 7.5, voteCount: 100, genreIds: [28, 12], genres: nil),
-            Movie(id: 2, title: "Test Movie 2", overview: "Overview 2", posterPath: "/poster2.jpg", backdropPath: "/backdrop2.jpg", releaseDate: "2023-02-01", voteAverage: 8.0, voteCount: 150, genreIds: [18, 53], genres: nil)
+            Movie(id: 1, title: "Test Movie 1", overview: "Overview 1", posterPath: "/poster1.jpg", backdropPath: "/backdrop1.jpg", releaseDate: "2023-01-01", voteAverage: 7.5, voteCount: 100, genres: nil),
+            Movie(id: 2, title: "Test Movie 2", overview: "Overview 2", posterPath: "/poster2.jpg", backdropPath: "/backdrop2.jpg", releaseDate: "2023-02-01", voteAverage: 8.0, voteCount: 150, genres: nil)
         ]
         return Just(mockMovies).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
@@ -37,16 +38,16 @@ private final class RepoMock: MovieRepositoryProtocol {
 
     func searchMovies(query: String) -> AnyPublisher<[Movie], Error> {
         let mockMovies = [
-            Movie(id: 100, title: "Search Result 1 for '\(query)'", overview: "Search overview 1", posterPath: "/search1.jpg", backdropPath: "/search_backdrop1.jpg", releaseDate: "2023-03-01", voteAverage: 6.5, voteCount: 80, genreIds: [35], genres: nil),
-            Movie(id: 101, title: "Search Result 2 for '\(query)'", overview: "Search overview 2", posterPath: "/search2.jpg", backdropPath: "/search_backdrop2.jpg", releaseDate: "2023-03-02", voteAverage: 7.2, voteCount: 120, genreIds: [28], genres: nil)
+            Movie(id: 100, title: "Search Result 1 for '\(query)'", overview: "Search overview 1", posterPath: "/search1.jpg", backdropPath: "/search_backdrop1.jpg", releaseDate: "2023-03-01", voteAverage: 6.5, voteCount: 80, genres: nil),
+            Movie(id: 101, title: "Search Result 2 for '\(query)'", overview: "Search overview 2", posterPath: "/search2.jpg", backdropPath: "/search_backdrop2.jpg", releaseDate: "2023-03-02", voteAverage: 7.2, voteCount: 120, genres: nil)
         ]
         return Just(mockMovies).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 
     func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> {
         let mockMovies = [
-            Movie(id: 200 + (page - 1) * 20, title: "Search Page \(page) Result 1 for '\(query)'", overview: "Search page \(page) overview 1", posterPath: "/search_p\(page)_1.jpg", backdropPath: "/search_backdrop_p\(page)_1.jpg", releaseDate: "2023-04-\(String(format: "%02d", page))", voteAverage: 6.0 + Double(page) * 0.3, voteCount: 70 + page * 15, genreIds: [35], genres: nil),
-            Movie(id: 201 + (page - 1) * 20, title: "Search Page \(page) Result 2 for '\(query)'", overview: "Search page \(page) overview 2", posterPath: "/search_p\(page)_2.jpg", backdropPath: "/search_backdrop_p\(page)_2.jpg", releaseDate: "2023-04-\(String(format: "%02d", page + 1))", voteAverage: 6.5 + Double(page) * 0.3, voteCount: 85 + page * 15, genreIds: [18], genres: nil)
+            Movie(id: 200 + (page - 1) * 20, title: "Search Page \(page) Result 1 for '\(query)'", overview: "Search page \(page) overview 1", posterPath: "/search_p\(page)_1.jpg", backdropPath: "/search_backdrop_p\(page)_1.jpg", releaseDate: "2023-04-\(String(format: "%02d", page))", voteAverage: 6.0 + Double(page) * 0.3, voteCount: 70 + page * 15, genres: nil),
+            Movie(id: 201 + (page - 1) * 20, title: "Search Page \(page) Result 2 for '\(query)'", overview: "Search page \(page) overview 2", posterPath: "/search_p\(page)_2.jpg", backdropPath: "/search_backdrop_p\(page)_2.jpg", releaseDate: "2023-04-\(String(format: "%02d", page + 1))", voteAverage: 6.5 + Double(page) * 0.3, voteCount: 85 + page * 15, genres: nil)
         ]
         let mockPage = MoviePage(items: mockMovies, page: page, totalPages: 3)
         return Just(mockPage).setFailureType(to: Error.self).eraseToAnyPublisher()

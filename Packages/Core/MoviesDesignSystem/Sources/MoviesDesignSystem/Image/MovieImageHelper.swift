@@ -1,11 +1,12 @@
 //
 //  MovieImageHelper.swift
-//  MoviesUtilities
+//  MoviesDesignSystem
 //
 //  Created by User on 9/10/25.
 //
 
 import Foundation
+import MoviesNetwork
 
 /// Helper for building movie image URLs in the presentation layer
 /// Uses the configured NetworkingConfig instead of hardcoded URLs

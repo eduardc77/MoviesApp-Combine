@@ -1,7 +1,13 @@
+//
+//  TMDBNetworkingClientDecodingErrorTests.swift
+//  MoviesNetworkTests
+//
+//  Created by User on 9/10/25.
+//
+
 import XCTest
 import Combine
 @testable import MoviesNetwork
-@testable import MoviesUtilities
 
 private final class URLProtocolStub_DecodeErr: URLProtocol {
     struct Response { let statusCode: Int; let headers: [String: String]; let body: Data }

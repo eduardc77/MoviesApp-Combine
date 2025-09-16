@@ -7,7 +7,6 @@
 
 import Foundation
 import Combine
-import MoviesUtilities
 
 /// HTTP client for TMDB API operations
 public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable {
@@ -15,7 +14,7 @@ public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable 
     private let networkingConfig: NetworkingConfig
     private let decoder: JSONDecoder
 
-    public init(session: URLSession = .shared, networkingConfig: NetworkingConfig) {
+    public init(session: URLSession = TMDBNetworkingClient.configuredSession(), networkingConfig: NetworkingConfig) {
         self.session = session
         self.networkingConfig = networkingConfig
 
@@ -61,6 +60,16 @@ public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable 
                 return TMDBNetworkingError.networkError(error)
             }
             .eraseToAnyPublisher()
+    }
+
+    // MARK: - Convenience session factory
+    public static func configuredSession() -> URLSession {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+        config.waitsForConnectivity = true
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: config)
     }
 
     private func buildURL(for endpoint: EndpointProtocol) -> URL? {

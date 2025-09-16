@@ -1,3 +1,10 @@
+//
+//  FavoriteMovie.swift
+//  MoviesData
+//
+//  Created by User on 9/10/25.
+//
+
 import Foundation
 import SwiftData
 
@@ -12,5 +19,3 @@ public final class FavoriteMovie {
         self.createdAt = createdAt
     }
 }
-
-
