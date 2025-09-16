@@ -22,7 +22,10 @@ let package = Package(
     targets: [
         .target(
             name: "MoviesDomain",
-            dependencies: [.product(name: "SharedModels", package: "MoviesShared"), .product(name: "DateUtilities", package: "MoviesUtilities")],
+            dependencies: [
+                .product(name: "SharedModels", package: "MoviesShared"),
+                .product(name: "DateUtilities", package: "MoviesUtilities")
+            ],
             resources: [
                 .process("Resources")
             ]

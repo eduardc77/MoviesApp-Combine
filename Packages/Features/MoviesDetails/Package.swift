@@ -37,7 +37,7 @@ let package = Package(
             name: "MoviesDetailsTests",
             dependencies: [
                 "MoviesDetails",
-                .product(name: "MoviesLogging", package: "MoviesUtilities"),
+                .product(name: "AppLog", package: "MoviesUtilities"),
                 "MoviesNetwork",
                 "MoviesData"
             ]

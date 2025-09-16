@@ -15,9 +15,10 @@
 		CE2396CF2E71A7E00083CE21 /* MoviesSearch in Frameworks */ = {isa = PBXBuildFile; productRef = CE2396CE2E71A7E00083CE21 /* MoviesSearch */; };
 		CE2398832E71C5140083CE21 /* MoviesDomain in Frameworks */ = {isa = PBXBuildFile; productRef = CE2398822E71C5140083CE21 /* MoviesDomain */; };
 		CE47051A2E71E4CA00C978A3 /* MoviesNavigation in Frameworks */ = {isa = PBXBuildFile; productRef = CE4705192E71E4CA00C978A3 /* MoviesNavigation */; };
-		CE4E5F282E78351E00E628A4 /* MoviesLogging in Frameworks */ = {isa = PBXBuildFile; productRef = CE4E5F272E78351E00E628A4 /* MoviesLogging */; };
 		CEB3DB122E78F55F00B1390E /* MoviesData in Frameworks */ = {isa = PBXBuildFile; productRef = CEB3DB112E78F55F00B1390E /* MoviesData */; };
 		CEB3DB162E78FBF300B1390E /* SharedModels in Frameworks */ = {isa = PBXBuildFile; productRef = CEB3DB152E78FBF300B1390E /* SharedModels */; };
+		CEFB3C062E7951C7003473A0 /* AppLog in Frameworks */ = {isa = PBXBuildFile; productRef = CEFB3C052E7951C7003473A0 /* AppLog */; };
+		CEFB3C082E7951D2003473A0 /* DateUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = CEFB3C072E7951D2003473A0 /* DateUtilities */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,9 +94,10 @@
 			files = (
 				CE2396CB2E71A7D80083CE21 /* MoviesNetwork in Frameworks */,
 				CE47051A2E71E4CA00C978A3 /* MoviesNavigation in Frameworks */,
-				CE4E5F282E78351E00E628A4 /* MoviesLogging in Frameworks */,
 				CE2396C32E71A7C80083CE21 /* MoviesDetails in Frameworks */,
+				CEFB3C082E7951D2003473A0 /* DateUtilities in Frameworks */,
 				CE2396C12E71A7C50083CE21 /* MoviesDesignSystem in Frameworks */,
+				CEFB3C062E7951C7003473A0 /* AppLog in Frameworks */,
 				CEB3DB122E78F55F00B1390E /* MoviesData in Frameworks */,
 				CE2398832E71C5140083CE21 /* MoviesDomain in Frameworks */,
 				CE2396C72E71A7D00083CE21 /* MoviesHome in Frameworks */,
@@ -182,9 +184,10 @@
 				CE2396CE2E71A7E00083CE21 /* MoviesSearch */,
 				CE2398822E71C5140083CE21 /* MoviesDomain */,
 				CE4705192E71E4CA00C978A3 /* MoviesNavigation */,
-				CE4E5F272E78351E00E628A4 /* MoviesLogging */,
 				CEB3DB112E78F55F00B1390E /* MoviesData */,
 				CEB3DB152E78FBF300B1390E /* SharedModels */,
+				CEFB3C052E7951C7003473A0 /* AppLog */,
+				CEFB3C072E7951D2003473A0 /* DateUtilities */,
 			);
 			productName = Movies;
 			productReference = CE983B0B2E7174730063F22E /* Movies.app */;
@@ -696,10 +699,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = MoviesNavigation;
 		};
-		CE4E5F272E78351E00E628A4 /* MoviesLogging */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = MoviesLogging;
-		};
 		CEB3DB112E78F55F00B1390E /* MoviesData */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MoviesData;
@@ -707,6 +706,14 @@
 		CEB3DB152E78FBF300B1390E /* SharedModels */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SharedModels;
+		};
+		CEFB3C052E7951C7003473A0 /* AppLog */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppLog;
+		};
+		CEFB3C072E7951D2003473A0 /* DateUtilities */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DateUtilities;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -24,7 +24,12 @@ let package = Package(
     targets: [
         .target(
             name: "MoviesData",
-            dependencies: [.product(name: "SharedModels", package: "MoviesShared"), "MoviesDomain", "MoviesNetwork", .product(name: "MoviesLogging", package: "MoviesUtilities")]
+            dependencies: [
+                .product(name: "SharedModels", package: "MoviesShared"),
+                "MoviesDomain",
+                "MoviesNetwork",
+                .product(name: "AppLog", package: "MoviesUtilities")
+            ]
         ),
         .testTarget(
             name: "MoviesDataTests",

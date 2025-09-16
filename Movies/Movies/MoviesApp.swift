@@ -7,7 +7,7 @@
 
 import SwiftUI
 import MoviesDesignSystem
-import MoviesLogging
+import AppLog
 import MoviesNavigation
 
 @main

@@ -95,6 +95,7 @@ public final class FavoritesViewModel {
             isLoading = false
         } else {
             // Need to fetch some movies
+            isLoading = true
             fetchMovies(for: Array(newIds))
         }
     }

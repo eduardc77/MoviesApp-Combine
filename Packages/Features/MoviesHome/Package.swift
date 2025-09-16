@@ -32,7 +32,7 @@ let package = Package(
                 "MoviesData",
                 "MoviesNavigation",
                 "MoviesDesignSystem",
-                .product(name: "MoviesLogging", package: "MoviesUtilities")
+                .product(name: "AppLog", package: "MoviesUtilities")
             ],
             resources: [
                 .process("Resources")

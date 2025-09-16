@@ -16,12 +16,12 @@ enum DTOMapper {
         Movie(
             id: dto.id,
             title: dto.title,
-            overview: dto.overview,
+            overview: dto.overview ?? "",
             posterPath: dto.posterPath,
             backdropPath: dto.backdropPath,
-            releaseDate: dto.releaseDate,
-            voteAverage: dto.voteAverage,
-            voteCount: dto.voteCount,
+            releaseDate: dto.releaseDate ?? "",
+            voteAverage: dto.voteAverage ?? 0.0,
+            voteCount: dto.voteCount ?? 0,
             genres: dto.genres?.map(toDomain)
         )
     }
@@ -36,14 +36,14 @@ enum DTOMapper {
         MovieDetails(
             id: dto.id,
             title: dto.title,
-            overview: dto.overview,
+            overview: dto.overview ?? "",
             posterPath: dto.posterPath,
             backdropPath: dto.backdropPath,
-            releaseDate: dto.releaseDate,
-            voteAverage: dto.voteAverage,
-            voteCount: dto.voteCount,
+            releaseDate: dto.releaseDate ?? "",
+            voteAverage: dto.voteAverage ?? 0.0,
+            voteCount: dto.voteCount ?? 0,
             runtime: dto.runtime,
-            genres: dto.genres.map(toDomain),
+            genres: dto.genres?.map(toDomain) ?? [],
             tagline: dto.tagline
         )
     }

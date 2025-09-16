@@ -71,7 +71,7 @@ final class MovieRepositoryTests: XCTestCase {
     func testFetchMoviesPassThrough() {
         let remote = RemoteDataSourceMock()
         remote.mockResponse = MoviesResponseDTO(
-            results: [MovieDTO(id: 1, title: "Test Movie", overview: "Overview", posterPath: "/poster.jpg", backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 7.5, voteCount: 100, genreIds: [28], genres: nil)],
+            results: [MovieDTO(id: 1, title: "Test Movie", overview: "Overview", posterPath: "/poster.jpg", backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 7.5, voteCount: 100, genreIds: [28], genres: nil, popularity: nil, video: nil, adult: nil, originalLanguage: nil, originalTitle: nil)],
             page: 2,
             totalPages: 3,
             totalResults: 50
@@ -134,7 +134,7 @@ final class MovieRepositoryTests: XCTestCase {
     func testFetchMoviesWithSorting() {
         let remote = RemoteDataSourceMock()
         remote.mockResponse = MoviesResponseDTO(
-            results: [MovieDTO(id: 1, title: "Sorted Movie", overview: "Overview", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 8.0, voteCount: 150, genreIds: [], genres: nil)],
+            results: [MovieDTO(id: 1, title: "Sorted Movie", overview: "Overview", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 8.0, voteCount: 150, genreIds: [], genres: nil, popularity: nil, video: nil, adult: nil, originalLanguage: nil, originalTitle: nil)],
             page: 1,
             totalPages: 1,
             totalResults: 1

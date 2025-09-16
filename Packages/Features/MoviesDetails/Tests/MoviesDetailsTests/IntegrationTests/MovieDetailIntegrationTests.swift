@@ -11,7 +11,7 @@ import SharedModels
 @testable import MoviesDetails
 @testable import MoviesDomain
 @testable import MoviesNetwork
-@testable import MoviesLogging
+@testable import AppLog
 @testable import MoviesData
 
 private final class URLProtocolStub_Detail: URLProtocol {

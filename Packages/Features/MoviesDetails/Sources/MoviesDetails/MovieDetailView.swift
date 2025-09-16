@@ -37,6 +37,7 @@ public struct MovieDetailView: View {
                         content(for: movie)
                     }
                 }
+                .coordinateSpace(name: "detailScroll")  // Required for StretchyRatioHeader
 
             }
         }
@@ -56,8 +57,9 @@ private extension MovieDetailView {
                 if let backdropPath = movie.backdropPath {
                     RemoteImageView(
                         movieBackdropPath: backdropPath,
-                        contentMode: .fill
+                        contentMode: .fill  // Back to .fill for proper stretching
                     )
+                    .clipped()  // Clip to prevent overflow
                 } else {
                     Rectangle()
                         .fill(Color.gray.opacity(0.12))
@@ -68,8 +70,6 @@ private extension MovieDetailView {
                         )
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
         }
         .overlay(
             LinearGradient(colors: [.black.opacity(0.35), .clear],

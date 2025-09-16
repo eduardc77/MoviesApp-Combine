@@ -90,11 +90,8 @@ public struct CardGridView<Item: CardDisplayable>: View {
                 if shouldScroll && !hasScrolledToTop {
                     hasScrolledToTop = true
                     scrollProxy.scrollTo("grid-top", anchor: .top)
-                    // Reset both local state and binding after animation completes
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        hasScrolledToTop = false
-                        shouldScrollToTop = false // Reset the binding
-                    }
+                    hasScrolledToTop = false
+                    shouldScrollToTop = false // Reset the binding
                 }
             }
             .background(Color.secondary.opacity(0.4))

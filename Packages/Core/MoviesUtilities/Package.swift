@@ -11,8 +11,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "MoviesLogging",
-            targets: ["MoviesLogging"]
+            name: "AppLog",
+            targets: ["AppLog"]
         ),
         .library(
             name: "DateUtilities",
@@ -22,8 +22,8 @@ let package = Package(
     dependencies: [],
     targets: [
         .target(
-            name: "MoviesLogging",
-            path: "Sources/MoviesLogging"
+            name: "AppLog",
+            path: "Sources/AppLog"
         ),
         .target(
             name: "DateUtilities",

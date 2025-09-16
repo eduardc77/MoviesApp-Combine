@@ -29,7 +29,7 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
 
     func test_fetchMovies_returnsDTOs() {
         let client = NetworkingClientMock()
-        let expectedDTO = MoviesResponseDTO(results: [MovieDTO(id: 1, title: "A", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 7.0, voteCount: 10, genreIds: [1], genres: nil)], page: 1, totalPages: 1, totalResults: 1)
+        let expectedDTO = MoviesResponseDTO(results: [MovieDTO(id: 1, title: "A", overview: "", posterPath: nil, backdropPath: nil, releaseDate: "2020-01-01", voteAverage: 7.0, voteCount: 10, genreIds: [1], genres: nil, popularity: nil, video: nil, adult: nil, originalLanguage: nil, originalTitle: nil)], page: 1, totalPages: 1, totalResults: 1)
         client.requestHandler = { endpoint in
             return Just(expectedDTO).setFailureType(to: Error.self).map { $0 as Any }.eraseToAnyPublisher()
         }
@@ -79,7 +79,7 @@ final class TMDBRemoteDataSourceTests: XCTestCase {
         sut.fetchMovieDetails(id: 9)
             .sink(receiveCompletion: { _ in }, receiveValue: { details in
                 XCTAssertEqual(details.id, 9)
-                XCTAssertEqual(details.genres.first?.name, "Action")
+                XCTAssertEqual(details.genres?.first?.name, "Action")
                 exp.fulfill()
             })
             .store(in: &cancellables)

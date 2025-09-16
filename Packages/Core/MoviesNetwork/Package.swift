@@ -16,12 +16,16 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../MoviesShared")
+        .package(path: "../MoviesShared"),
+        .package(path: "../MoviesUtilities")
     ],
     targets: [
         .target(
             name: "MoviesNetwork",
-            dependencies: [.product(name: "SharedModels", package: "MoviesShared")]
+            dependencies: [
+                .product(name: "SharedModels", package: "MoviesShared"),
+                .product(name: "AppLog", package: "MoviesUtilities")
+            ]
         ),
         .testTarget(
             name: "MoviesNetworkTests",

@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import SharedModels
 import MoviesDomain
-import MoviesLogging
+import AppLog
 
 @MainActor
 @Observable

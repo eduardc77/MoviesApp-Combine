@@ -1,5 +1,5 @@
 //
-//  MovieCardView.swift
+//  GenericCardView.swift
 //  MoviesDesignSystem
 //
 //  Created by User on 9/10/25.
