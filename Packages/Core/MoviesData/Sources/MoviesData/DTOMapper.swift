@@ -22,7 +22,8 @@ enum DTOMapper {
             releaseDate: dto.releaseDate ?? "",
             voteAverage: dto.voteAverage ?? 0.0,
             voteCount: dto.voteCount ?? 0,
-            genres: dto.genres?.map(toDomain)
+            genres: dto.genres?.map(toDomain),
+            popularity: dto.popularity ?? 0.0
         )
     }
 

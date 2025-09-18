@@ -14,7 +14,6 @@ import MoviesNavigation
 /// Main view for displaying favorite movies
 public struct FavoritesView: View {
     @Environment(AppRouter.self) private var appRouter
-    @State private var showingSortSheet = false
     @State private var viewModel: FavoritesViewModel
 
     public init(repository: MovieRepositoryProtocol, favoriteStore: FavoritesStoreProtocol) {
@@ -49,6 +48,8 @@ public struct FavoritesView: View {
                              onTap: { item in appRouter.navigateToMovieDetails(movieId: item.id) },
                              onFavoriteToggle: { item in viewModel.toggleFavorite(item.id) },
                              isFavorite: { item in viewModel.isFavorite(item.id) },
+                             onLoadNext: { viewModel.loadNextIfNeeded(currentItem: viewModel.items.last) },
+                             showLoadingOverlay: viewModel.isLoadingNext,
                              onRefresh: { await viewModel.refresh() },
                              shouldScrollToTop: $viewModel.didChangeSortOrder)
             }
@@ -60,7 +61,11 @@ public struct FavoritesView: View {
         .navigationBarTitleDisplayMode(.inline)
 #endif
         .sortToolbar(
-            isPresented: $showingSortSheet,
+            onPresentDialog: { sortOrder, onSelect in
+                appRouter.presentSortOptions(current: sortOrder) { selectedOption in
+                    onSelect(selectedOption)
+                }
+            },
             currentSortOption: viewModel.sortOrder
         ) { order in
             viewModel.setSortOrder(order)

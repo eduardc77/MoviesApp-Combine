@@ -25,14 +25,23 @@ public final class FavoritesRepository: FavoritesRepositoryProtocol {
         localDataSource.isFavorite(movieId: movieId)
     }
 
-    public func toggleFavorite(movieId: Int) -> AnyPublisher<Void, Error> {
-        // Check current to decide add/remove with optimistic UI at store level.
-        // Here we just perform a toggle by attempting add then remove if exists fails, or vice versa.
-        // Simpler: read favorite flag then route.
-        localDataSource.isFavorite(movieId: movieId)
-            .flatMap { [localDataSource] isFav -> AnyPublisher<Void, Error> in
-                if isFav { return localDataSource.removeFromFavorites(movieId: movieId) } else { return localDataSource.addToFavorites(movieId: movieId) }
-            }
-            .eraseToAnyPublisher()
+    public func removeFromFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
+        localDataSource.removeFromFavorites(movieId: movieId)
+    }
+
+    public func addToFavorites(movie: Movie) -> AnyPublisher<Void, Error> {
+        localDataSource.addToFavorites(movie: movie)
+    }
+
+    public func addToFavorites(details: MovieDetails) -> AnyPublisher<Void, Error> {
+        localDataSource.addToFavorites(details: details)
+    }
+
+    public func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) -> AnyPublisher<[Movie], Error> {
+        localDataSource.getFavorites(page: page, pageSize: pageSize, sortOrder: sortOrder)
+    }
+
+    public func getFavoriteDetails(movieId: Int) -> AnyPublisher<MovieDetails?, Error> {
+        localDataSource.getFavoriteDetails(movieId: movieId)
     }
 }

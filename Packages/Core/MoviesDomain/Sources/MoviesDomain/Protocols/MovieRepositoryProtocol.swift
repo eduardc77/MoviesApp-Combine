@@ -9,7 +9,7 @@ import Combine
 import SharedModels
 
 /// Protocol defining the core movie repository operations
-public protocol MovieRepositoryProtocol: Sendable {
+public protocol MovieRepositoryProtocol {
     /// Fetches movies of a specific type from the data source
     func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error>
     /// Fetches movies of a specific type for a page

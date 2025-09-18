@@ -8,6 +8,7 @@
 import XCTest
 import Combine
 import SharedModels
+import MoviesDomain
 @testable import MoviesDetails
 @testable import MoviesDomain
 @testable import MoviesData
@@ -19,10 +20,8 @@ private final class InMemoryFavoritesLocalDataSource: @unchecked Sendable, Favor
         Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 
-    func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
-        ids.insert(movieId)
-        return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
-    }
+    func addToFavorites(movie: Movie) -> AnyPublisher<Void, Error> { ids.insert(movie.id); return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher() }
+    func addToFavorites(details: MovieDetails) -> AnyPublisher<Void, Error> { ids.insert(details.id); return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher() }
 
     func removeFromFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
         ids.remove(movieId)
@@ -31,6 +30,23 @@ private final class InMemoryFavoritesLocalDataSource: @unchecked Sendable, Favor
 
     func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
         Just(ids.contains(movieId)).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+
+    func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) -> AnyPublisher<[Movie], Error> {
+        let sorted = Array(ids).sorted()
+        let start = max(page - 1, 0) * pageSize
+        let end = min(start + pageSize, sorted.count)
+        let slice = (start < end) ? Array(sorted[start..<end]) : []
+        let movies = slice.map { id in Movie(id: id, title: "t\(id)", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 0, voteCount: 0, genres: [], popularity: 0) }
+        return Just(movies).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+
+    func getFavoriteDetails(movieId: Int) -> AnyPublisher<MovieDetails?, Error> {
+        if ids.contains(movieId) {
+            let details = MovieDetails(id: movieId, title: "t\(movieId)", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 0, voteCount: 0, runtime: 100, genres: [], tagline: nil)
+            return Just(details).setFailureType(to: Error.self).eraseToAnyPublisher()
+        }
+        return Just(nil).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 }
 

@@ -18,7 +18,8 @@ final class MovieTests: XCTestCase {
             backdropPath: "/backdrop.jpg",
             releaseDate: "2023-01-01",
             voteAverage: 8.5,
-            voteCount: 100
+            voteCount: 100,
+            popularity: 75.5
         )
 
         XCTAssertEqual(movie.id, 1)
@@ -35,7 +36,8 @@ final class MovieTests: XCTestCase {
             backdropPath: "/backdrop.jpg",
             releaseDate: "2023-01-01",
             voteAverage: 8.5,
-            voteCount: 100
+            voteCount: 100,
+            popularity: 75.5
         )
 
         let movie2 = Movie(
@@ -46,7 +48,8 @@ final class MovieTests: XCTestCase {
             backdropPath: "/backdrop.jpg",
             releaseDate: "2023-01-01",
             voteAverage: 8.5,
-            voteCount: 100
+            voteCount: 100,
+            popularity: 75.5
         )
 
         XCTAssertEqual(movie1, movie2)

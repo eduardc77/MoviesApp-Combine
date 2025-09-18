@@ -20,6 +20,9 @@ public final class AppRouter {
     /// Currently selected tab for routing context
     public var selectedTab: AppTab = .home
 
+    // Simple dialog state
+    public var dialog: AppDialog = .none
+
     public init() {}
 
     // MARK: - Navigation Methods
@@ -59,6 +62,27 @@ public final class AppRouter {
         }
     }
 
+    // MARK: - Dialog Methods
+
+    /// Present a dialog
+    public func presentDialog(_ newDialog: AppDialog) {
+        dialog = newDialog
+    }
+
+    /// Dismiss current dialog
+    public func dismissDialog() {
+        dialog = .none
+    }
+
+    /// Present sort options dialog at app level
+    public func presentSortOptions(
+        current: MovieSortOrder?,
+        onSelect: @escaping (MovieSortOrder) -> Void
+    ) {
+        dialog = .sortOptions(current: current, onSelect: onSelect)
+    }
+
+
     // MARK: - Deep Link Handling
 
     /// Handle deep links
@@ -70,6 +94,25 @@ public final class AppRouter {
             return .navigateToSearch(query)
         case .tab(let tab):
             return .switchToTab(tab)
+        }
+    }
+}
+
+// MARK: - App Dialog Types
+
+/// Simple app-level dialog states
+public enum AppDialog: Equatable {
+    case sortOptions(current: MovieSortOrder?, onSelect: (MovieSortOrder) -> Void)
+    case none
+
+    public static func == (lhs: AppDialog, rhs: AppDialog) -> Bool {
+        switch (lhs, rhs) {
+        case (.none, .none):
+            return true
+        case (.sortOptions, .sortOptions):
+            return true
+        default:
+            return false
         }
     }
 }

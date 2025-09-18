@@ -26,10 +26,7 @@ public final class HomeViewModel {
 
     @ObservationIgnored private let repository: MovieRepositoryProtocol
     @ObservationIgnored private let favoritesStore: FavoritesStoreProtocol
-    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     @ObservationIgnored private var currentRequest: AnyCancellable?
-    @ObservationIgnored private var lastRequestedCount: Int = 0
-    @ObservationIgnored private var isInitialLoad: Bool = true
 
     public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol) {
         self.repository = repository
@@ -57,7 +54,7 @@ public final class HomeViewModel {
         }
     }
 
-    /// Clean async refresh method for pull-to-refresh
+    /// Async refresh method for pull-to-refresh
     public func refresh() async {
         AppLog.home.info("HOME PULL-TO-REFRESH: \(category)")
         // Reset and reload data
@@ -77,13 +74,14 @@ public final class HomeViewModel {
             isLoadingNext = true
         }
 
-        let pagePublisher: AnyPublisher<MoviePage, Error> = {
-            if let sortOrder = sortOrder {
-                return repository.fetchMovies(type: category, page: next, sortBy: sortOrder)
-            } else {
-                return repository.fetchMovies(type: category, page: next)
-            }
-        }()
+        // Use user-selected sort order or default for category
+        let effectiveSortOrder = sortOrder ?? getDefaultSortOrder(for: category)
+
+        let pagePublisher = repository.fetchMovies(
+            type: category,
+            page: next,
+            sortBy: effectiveSortOrder
+        )
 
         currentRequest = pagePublisher
             .receive(on: DispatchQueue.main)
@@ -97,17 +95,24 @@ public final class HomeViewModel {
                 guard let self else { return }
 
                 AppLog.home.info("HOME RESPONSE page:\(page.page) items:\(page.items.count)")
+
+                // Process pagination
                 self.page = page.page
                 self.totalPages = page.totalPages
+
+                // Handle duplicates and append new items
                 let existing = Set(self.items.map(\.id))
                 let newItems = page.items.filter { !existing.contains($0.id) }
                 self.items.append(contentsOf: newItems)
-                self.lastRequestedCount = self.items.count
             })
     }
 
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
-    public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
+    public func toggleFavorite(_ id: Int) {
+        if let movie = items.first(where: { $0.id == id }) {
+            favoritesStore.addToFavorites(movie: movie)
+        }
+    }
 
     public func setSortOrder(_ order: MovieSortOrder) {
         // Store the previous sort order to detect changes
@@ -137,14 +142,25 @@ public final class HomeViewModel {
         items.removeAll()
         page = 1
         totalPages = 1
-        lastRequestedCount = 0
     }
 
     public func loadNextIfNeeded(currentItem: Movie?) {
         guard let id = currentItem?.id,
               let idx = items.firstIndex(where: { $0.id == id }),
-              idx >= max(items.count - 6, 0) else { return }
+              idx >= max(items.count - 3, 0) else { return }
         load(reset: false)
+    }
+
+    // MARK: - Helpers
+    private func getDefaultSortOrder(for category: MovieType) -> MovieSortOrder {
+        switch category {
+        case .popular:
+            return .popularityDescending
+        case .topRated:
+            return .ratingDescending
+        case .nowPlaying, .upcoming:
+            return .popularityDescending  // Default to popularity for time-based categories
+        }
     }
 
     // MARK: - Category switching

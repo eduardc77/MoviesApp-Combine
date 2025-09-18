@@ -7,7 +7,6 @@
 
 import SwiftUI
 import MoviesNavigation
-import MoviesData
 import MoviesDomain
 import MoviesDesignSystem
 
@@ -16,7 +15,6 @@ public struct HomeView: View {
     @State private var viewModel: HomeViewModel
 
     @State private var selectedTab: HomeCategory = .nowPlaying
-    @State private var showingSortSheet = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 160), spacing: 16)
@@ -85,7 +83,11 @@ public struct HomeView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .sortToolbar(
-            isPresented: $showingSortSheet,
+            onPresentDialog: { sortOrder, onSelect in
+                appRouter.presentSortOptions(current: sortOrder) { selectedOption in
+                    onSelect(selectedOption)
+                }
+            },
             currentSortOption: viewModel.sortOrder
         ) { order in
             viewModel.setSortOrder(order)

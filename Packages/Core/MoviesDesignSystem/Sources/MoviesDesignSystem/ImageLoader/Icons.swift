@@ -49,6 +49,6 @@ public extension Image {
     /// Test function to verify asset loading is working
     static func testAssetLoading() -> Bool {
         // Try to load an asset to verify bundle access works
-        return Bundle.module.path(forResource: "ds_star", ofType: nil) != nil
+        return Bundle.module.path(forResource: "ic_star", ofType: nil) != nil
     }
 }

@@ -25,8 +25,9 @@ private final class RepoMock: MovieRepositoryProtocol {
             let posterPath = "/search_p\(page)_\(index + 1).jpg"
             let backdropPath = "/search_backdrop_p\(page)_\(index + 1).jpg"
             let releaseDate = "2023-04-01"
-            let voteAverage = 6.0 + Double(page) * 0.3 + Double(index) * 0.1
+            let baseRating = 6.0 + Double(page) * 0.3 + Double(index) * 0.1
             let voteCount = 70 + page * 15 + index * 5
+            let popularity = 50.0 + Double(page) * 5.0 + Double(index) * 2.0
 
             return Movie(
                 id: movieId,
@@ -35,9 +36,10 @@ private final class RepoMock: MovieRepositoryProtocol {
                 posterPath: posterPath,
                 backdropPath: backdropPath,
                 releaseDate: releaseDate,
-                voteAverage: voteAverage,
+                voteAverage: baseRating,
                 voteCount: voteCount,
-                genres: nil
+                genres: nil,
+                popularity: popularity
             )
         }
         let mockPage = MoviePage(items: mockMovies, page: page, totalPages: 3)

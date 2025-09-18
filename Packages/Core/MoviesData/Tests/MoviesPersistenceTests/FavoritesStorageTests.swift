@@ -15,7 +15,7 @@ final class FavoritesStorageTests: XCTestCase {
     @MainActor
     func testGetFavoriteMovieIdsEmpty() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: FavoriteMovie.self, configurations: config)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self, configurations: config)
         let sut = FavoritesLocalDataSource(container: container)
         var cancellables = Set<AnyCancellable>()
         let exp = expectation(description: "empty")
@@ -31,17 +31,17 @@ final class FavoritesStorageTests: XCTestCase {
     @MainActor
     func testAddAndRemoveFavorites() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: FavoriteMovie.self, configurations: config)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self, configurations: config)
         let sut = FavoritesLocalDataSource(container: container)
         var cancellables = Set<AnyCancellable>()
         let add1 = expectation(description: "add1")
-        sut.addToFavorites(movieId: 1)
+        _ = sut.addToFavorites(movie: Movie(id: 1, title: "t", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 1, voteCount: 1, genres: [], popularity: 0))
             .sink(receiveCompletion: { _ in add1.fulfill() }, receiveValue: { _ in })
             .store(in: &cancellables)
         wait(for: [add1], timeout: 1)
 
         let add2 = expectation(description: "add2")
-        sut.addToFavorites(movieId: 2)
+        _ = sut.addToFavorites(movie: Movie(id: 2, title: "t", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 1, voteCount: 1, genres: [], popularity: 0))
             .sink(receiveCompletion: { _ in add2.fulfill() }, receiveValue: { _ in })
             .store(in: &cancellables)
         wait(for: [add2], timeout: 1)
@@ -65,17 +65,17 @@ final class FavoritesStorageTests: XCTestCase {
     @MainActor
     func testDuplicateAddToFavoritesKeepsSingleEntry() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: FavoriteMovie.self, configurations: config)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self, configurations: config)
         let sut = FavoritesLocalDataSource(container: container)
         var cancellables = Set<AnyCancellable>()
         let add1 = expectation(description: "add1")
-        sut.addToFavorites(movieId: 1)
+        _ = sut.addToFavorites(movie: Movie(id: 1, title: "t", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 1, voteCount: 1, genres: [], popularity: 0))
             .sink(receiveCompletion: { _ in add1.fulfill() }, receiveValue: { _ in })
             .store(in: &cancellables)
         wait(for: [add1], timeout: 1)
 
         let add2 = expectation(description: "add2")
-        sut.addToFavorites(movieId: 1)
+        _ = sut.addToFavorites(movie: Movie(id: 1, title: "t", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 1, voteCount: 1, genres: [], popularity: 0))
             .sink(receiveCompletion: { _ in add2.fulfill() }, receiveValue: { _ in })
             .store(in: &cancellables)
         wait(for: [add2], timeout: 1)
@@ -94,7 +94,7 @@ final class FavoritesStorageTests: XCTestCase {
     @MainActor
     func testConcurrentOpsNoDeadlock() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: FavoriteMovie.self, configurations: config)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self, configurations: config)
         let sut = FavoritesLocalDataSource(container: container)
         var cancellables = Set<AnyCancellable>()
         // Just verify that multiple operations complete successfully
@@ -104,7 +104,7 @@ final class FavoritesStorageTests: XCTestCase {
         let totalOperations = 5
 
         for i in 0..<totalOperations {
-            sut.addToFavorites(movieId: i).sink(receiveCompletion: { _ in
+            sut.addToFavorites(movie: Movie(id: i, title: "t", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 1, voteCount: 1, genres: [], popularity: 0)).sink(receiveCompletion: { _ in
                 completedCount += 1
                 if completedCount == totalOperations {
                     expectation.fulfill()
@@ -120,7 +120,7 @@ final class FavoritesStorageTests: XCTestCase {
     @MainActor
     func testMemoryLeakPreventionSubscriptionCleanup() {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: FavoriteMovie.self, configurations: config)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self, configurations: config)
         let sut = FavoritesLocalDataSource(container: container)
         var cancellables = Set<AnyCancellable>()
         // Critical test: Verify Combine subscriptions don't cause memory leaks
@@ -149,7 +149,7 @@ final class FavoritesStorageTests: XCTestCase {
 
         // Verify storage is still functional after subscription cleanup
         let expectation = self.expectation(description: "Storage still works")
-        sut.addToFavorites(movieId: 999)
+        sut.addToFavorites(movie: Movie(id: 999, title: "t", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 1, voteCount: 1, genres: [], popularity: 0))
             .sink(receiveCompletion: { _ in
                 expectation.fulfill()
             }, receiveValue: { _ in })

@@ -17,6 +17,7 @@ public struct Movie: Identifiable, Hashable, Equatable, Sendable {
     public let voteAverage: Double
     public let voteCount: Int
     public let genres: [Genre]?
+    public let popularity: Double
 
     public init(
         id: Int,
@@ -27,7 +28,8 @@ public struct Movie: Identifiable, Hashable, Equatable, Sendable {
         releaseDate: String,
         voteAverage: Double,
         voteCount: Int,
-        genres: [Genre]? = nil
+        genres: [Genre]? = nil,
+        popularity: Double
     ) {
         self.id = id
         self.title = title
@@ -38,6 +40,7 @@ public struct Movie: Identifiable, Hashable, Equatable, Sendable {
         self.voteAverage = voteAverage
         self.voteCount = voteCount
         self.genres = genres
+        self.popularity = popularity
     }
 
     public var releaseYear: String {

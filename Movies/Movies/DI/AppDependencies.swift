@@ -6,6 +6,7 @@
 //
 
 import Observation
+import SwiftData
 import MoviesData
 import MoviesDomain
 import MoviesNetwork
@@ -34,8 +35,16 @@ public final class AppDependencies {
         self.networkingConfig = TMDBNetworkingConfig.config
         self.movieRepository = MovieRepository.development()
 
-        // Initialize store (reactive layer)
-        self.favorites = FavoritesStore()
+        // Initialize SwiftData container for favorites schema
+        let container: ModelContainer = {
+            do { return try ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self) }
+            catch { fatalError("Failed to initialize ModelContainer: \(error)") }
+        }()
+
+        // Initialize store (reactive layer) with injected container
+        self.favorites = FavoritesStore(
+            favoritesLocalDataSource: FavoritesLocalDataSource(container: container)
+        )
     }
 
     /// Convenience initializer for testing with custom dependencies
@@ -47,7 +56,13 @@ public final class AppDependencies {
         networkingConfig: NetworkingConfig
     ) {
         self.movieRepository = movieRepository
-        self.favorites = FavoritesStore()
+        let container: ModelContainer = {
+            do { return try ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self) }
+            catch { fatalError("Failed to initialize ModelContainer: \(error)") }
+        }()
+        self.favorites = FavoritesStore(
+            favoritesLocalDataSource: FavoritesLocalDataSource(container: container)
+        )
         self.networkingConfig = networkingConfig
     }
 }

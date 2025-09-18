@@ -29,6 +29,8 @@ public extension LocalizedStringResource {
             table: "Domain",
             bundle: .atURL(Bundle.module.bundleURL)
         )
+        public static let popularityAscending = LocalizedStringResource("sort.popularity_asc", table: "Domain", bundle: .atURL(Bundle.module.bundleURL))
+        public static let popularityDescending = LocalizedStringResource("sort.popularity_desc", table: "Domain", bundle: .atURL(Bundle.module.bundleURL))
         public static let ratingAscending = LocalizedStringResource("sort.rating_asc", table: "Domain", bundle: .atURL(Bundle.module.bundleURL))
         public static let ratingDescending = LocalizedStringResource("sort.rating_desc", table: "Domain", bundle: .atURL(Bundle.module.bundleURL))
         public static let releaseDateAscending = LocalizedStringResource("sort.release_asc", table: "Domain", bundle: .atURL(Bundle.module.bundleURL))

@@ -58,7 +58,7 @@ public struct GenericCardView<Item: CardDisplayable>: View {
                             .stroke(.separator, lineWidth: 0.5)
                     )
 
-                HStack(alignment: .center, spacing: 8) {
+                HStack(alignment: .center) {
                     Text(item.releaseYear)
                         .font(.footnote.weight(.semibold))
                         .lineLimit(1)
@@ -70,6 +70,7 @@ public struct GenericCardView<Item: CardDisplayable>: View {
                             .renderingMode(.template)
                             .foregroundStyle(.orange)
                         Text("\(item.rating, specifier: "%.1f")")
+                            .lineLimit(1)
                             .font(.footnote.weight(.semibold))
                     }
 

@@ -7,6 +7,7 @@
 
 import XCTest
 import Combine
+import MoviesDomain
 @testable import MoviesData
 
 private final class LocalDataSourceMock: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
@@ -17,9 +18,15 @@ private final class LocalDataSourceMock: @unchecked Sendable, FavoritesLocalData
         Just(ids).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 
-    func addToFavorites(movieId: Int) -> AnyPublisher<Void, Error> {
+    func addToFavorites(movie: Movie) -> AnyPublisher<Void, Error> {
         if shouldFail { return Fail(error: NSError(domain: "x", code: -1)).eraseToAnyPublisher() }
-        ids.insert(movieId)
+        ids.insert(movie.id)
+        return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+
+    func addToFavorites(details: MovieDetails) -> AnyPublisher<Void, Error> {
+        if shouldFail { return Fail(error: NSError(domain: "x", code: -1)).eraseToAnyPublisher() }
+        ids.insert(details.id)
         return Just(()).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 
@@ -31,6 +38,25 @@ private final class LocalDataSourceMock: @unchecked Sendable, FavoritesLocalData
 
     func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
         Just(ids.contains(movieId)).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+
+    func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) -> AnyPublisher<[Movie], Error> {
+        let sortedIds = Array(ids).sorted()
+        let start = max(page - 1, 0) * pageSize
+        let end = min(start + pageSize, sortedIds.count)
+        let slice = (start < end) ? Array(sortedIds[start..<end]) : []
+        let movies = slice.map { id in
+            Movie(id: id, title: "t\(id)", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 0, voteCount: 0, genres: [], popularity: 0)
+        }
+        return Just(movies).setFailureType(to: Error.self).eraseToAnyPublisher()
+    }
+
+    func getFavoriteDetails(movieId: Int) -> AnyPublisher<MovieDetails?, Error> {
+        if ids.contains(movieId) {
+            let details = MovieDetails(id: movieId, title: "t\(movieId)", overview: "o", posterPath: nil, backdropPath: nil, releaseDate: "2023-01-01", voteAverage: 0, voteCount: 0, runtime: 100, genres: [], tagline: nil)
+            return Just(details).setFailureType(to: Error.self).eraseToAnyPublisher()
+        }
+        return Just(nil).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 }
 
@@ -48,26 +74,26 @@ final class FavoritesStoreTests: XCTestCase {
         wait(for: [exp], timeout: 1.0)
     }
 
-    func testToggleFavoriteAddsOptimisticallyAndRollsBackOnFailure() {
+    func testRemoveFavoriteOptimisticRollbackOnFailure() {
         let mock = LocalDataSourceMock()
+        mock.ids = [10]
         let store = FavoritesStore(favoritesLocalDataSource: mock)
-        // Ensure initial load completed before mutating
-        let exp = expectation(description: "loaded")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+        // Wait for initial load
+        let load = expectation(description: "loaded")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { load.fulfill() }
+        wait(for: [load], timeout: 1.0)
 
-        store.toggleFavorite(movieId: 10)
         XCTAssertTrue(store.favoriteMovieIds.contains(10))
+
+        // Fail removal to trigger rollback
         mock.shouldFail = true
-        store.toggleFavorite(movieId: 10) // attempt remove, will fail and roll back
-        let revert = expectation(description: "reverted")
+        _ = store.removeFromFavorites(movieId: 10)
+        let rollback = expectation(description: "rollback")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             XCTAssertTrue(store.favoriteMovieIds.contains(10))
-            revert.fulfill()
+            rollback.fulfill()
         }
-        wait(for: [revert], timeout: 1.0)
+        wait(for: [rollback], timeout: 1.0)
     }
 }
 

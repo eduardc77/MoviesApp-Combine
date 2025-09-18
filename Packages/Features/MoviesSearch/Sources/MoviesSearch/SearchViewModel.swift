@@ -43,15 +43,15 @@ public final class SearchViewModel {
         self.favoritesStore = favoritesStore
         // Debounced type-ahead (>=3 chars). Set loading pre-debounce for responsiveness.
         querySubject
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) } // Trim whitespace
             .removeDuplicates()
             .handleEvents(receiveOutput: { [weak self] trimmed in
                 guard let self else { return }
                 if trimmed.isEmpty {
-                    self.cancelAndClear()
+                    self.cancelAndClear() // Clear when empty
                 } else if trimmed.count >= 3 {
                     self.error = nil
-                    self.isLoading = true
+                    self.isLoading = true // Show loading immediately
                 }
             })
             .debounce(for: .milliseconds(400), scheduler: DispatchQueue.main)
@@ -88,7 +88,7 @@ public final class SearchViewModel {
         }
     }
 
-    /// Clean async refresh method for pull-to-refresh
+    /// Async refresh method for pull-to-refresh
     public func refresh() async {
         guard !query.isEmpty else { return }
         search(reset: true, trigger: .submit)
@@ -134,12 +134,16 @@ public final class SearchViewModel {
     public var canLoadMore: Bool { page < totalPages }
 
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
-    public func toggleFavorite(_ id: Int) { favoritesStore.toggleFavorite(movieId: id) }
+    public func toggleFavorite(_ id: Int) {
+        if let movie = items.first(where: { $0.id == id }) {
+            favoritesStore.addToFavorites(movie: movie)
+        }
+    }
 
     public func loadNextIfNeeded(currentItem: Movie?) {
         guard let id = currentItem?.id,
               let idx = items.firstIndex(where: { $0.id == id }),
-              idx >= max(items.count - 6, 0) else { return }
+              idx >= max(items.count - 3, 0) else { return }
         search(reset: false, trigger: .submit)
     }
 

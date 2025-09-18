@@ -4,10 +4,11 @@ import PackageDescription
 let package = Package(
     name: "MoviesData",
     platforms: [
-        .iOS("17.1"),
+        .iOS(.v17),
         .macOS(.v14),
         .watchOS(.v9),
-        .tvOS(.v16)
+        .tvOS(.v16),
+        .visionOS(.v2)
     ],
     products: [
         .library(
