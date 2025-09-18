@@ -25,10 +25,6 @@ public final class FavoritesViewModel {
     @ObservationIgnored private var currentPage = 1
     @ObservationIgnored private var pageSize = 20
     @ObservationIgnored private var canLoadMore = true
-    /// Tracks if sort order was just changed (for scroll-to-top UX)
-    public var didChangeSortOrder = false
-
-    // Removed network cache; favorites are sourced from local SwiftData now
 
     public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol) {
         self.repository = repository
@@ -105,7 +101,6 @@ public final class FavoritesViewModel {
 
     public func setSortOrder(_ order: MovieSortOrder) {
         // Mark that sort changed for scroll-to-top UX
-        didChangeSortOrder = true
         sortOrder = order
         // Reload using local sort
         load(reset: true)

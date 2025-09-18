@@ -69,8 +69,6 @@ public final class FavoritesLocalDataSource: FavoritesLocalDataSourceProtocol {
         .eraseToAnyPublisher()
     }
 
-    // Removed ID-only insert path: snapshot writes are required
-
     public func addToFavorites(movie: Movie) -> AnyPublisher<Void, Error> {
         Future { [weak self] promise in
             guard let self else { return promise(.success(())) }

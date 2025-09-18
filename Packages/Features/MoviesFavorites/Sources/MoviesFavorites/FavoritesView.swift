@@ -50,8 +50,7 @@ public struct FavoritesView: View {
                              isFavorite: { item in viewModel.isFavorite(item.id) },
                              onLoadNext: { viewModel.loadNextIfNeeded(currentItem: viewModel.items.last) },
                              showLoadingOverlay: viewModel.isLoadingNext,
-                             onRefresh: { await viewModel.refresh() },
-                             shouldScrollToTop: $viewModel.didChangeSortOrder)
+                             onRefresh: { await viewModel.refresh() })
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
