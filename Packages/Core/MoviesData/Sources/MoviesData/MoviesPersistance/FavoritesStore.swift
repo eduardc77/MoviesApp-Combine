@@ -110,4 +110,42 @@ extension FavoritesStore: FavoritesStoreProtocol {
                 .store(in: &cancellables)
         }
     }
+
+    /// Toggle favorite status for a movie in a collection
+    /// - Parameters:
+    ///   - movieId: The ID of the movie to toggle
+    ///   - items: Array of movies to find the movie data
+    /// - Returns: The new favorite status (true = now favorited, false = now unfavorited)
+    public func toggleFavorite(movieId: Int, in items: [Movie]) -> Bool {
+        if isFavorite(movieId: movieId) {
+            // Currently favorited, so remove it
+            removeFromFavorites(movieId: movieId)
+            return false  // Now unfavorited
+        } else if let movie = items.first(where: { $0.id == movieId }) {
+            // Not favorited, so add it
+            addToFavorites(movie: movie)
+            return true   // Now favorited
+        }
+        // Movie not found in items, return current status
+        return isFavorite(movieId: movieId)
+    }
+
+    /// Toggle favorite status for movie details
+    /// - Parameters:
+    ///   - movieId: The ID of the movie to toggle
+    ///   - movieDetails: The movie details data
+    /// - Returns: The new favorite status
+    public func toggleFavorite(movieId: Int, movieDetails: MovieDetails?) -> Bool {
+        if isFavorite(movieId: movieId) {
+            // Currently favorited, so remove it
+            removeFromFavorites(movieId: movieId)
+            return false  // Now unfavorited
+        } else if let details = movieDetails {
+            // Not favorited, so add it
+            addToFavorites(details: details)
+            return true   // Now favorited
+        }
+        // No details provided, return current status
+        return isFavorite(movieId: movieId)
+    }
 }

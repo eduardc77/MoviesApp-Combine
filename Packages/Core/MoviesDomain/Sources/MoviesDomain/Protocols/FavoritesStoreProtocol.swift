@@ -24,4 +24,7 @@ public protocol FavoritesStoreProtocol: Sendable {
 
     /// Fetch locally stored favorite details snapshot if available
     func getFavoriteDetails(movieId: Int) async throws -> MovieDetails?
+
+    func toggleFavorite(movieId: Int, in items: [Movie]) -> Bool
+    func toggleFavorite(movieId: Int, movieDetails: MovieDetails?) -> Bool
 }

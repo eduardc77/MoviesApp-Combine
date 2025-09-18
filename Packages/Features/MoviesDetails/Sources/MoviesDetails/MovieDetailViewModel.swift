@@ -67,9 +67,7 @@ public final class MovieDetailViewModel {
     }
 
     public func toggleFavorite() {
-        if let details = movie {
-            favoritesStore.addToFavorites(details: details)
-        }
+        _ = favoritesStore.toggleFavorite(movieId: movieId, movieDetails: movie)
     }
 
     public func isFavorite() -> Bool {

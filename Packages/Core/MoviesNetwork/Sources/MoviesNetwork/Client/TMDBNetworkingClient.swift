@@ -63,6 +63,15 @@ public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable 
                     throw TMDBNetworkingError.networkError(error)
                 }
             }
+            .catch { error -> AnyPublisher<T, Error> in
+                if self.shouldRetry(error) {
+                    AppLog.network.log("Retrying request: \(error.localizedDescription)")
+                    return self.request(endpoint)  // Recursive retry
+                        .delay(for: .seconds(1), scheduler: DispatchQueue.global())
+                        .eraseToAnyPublisher()
+                }
+                return Fail(error: error).eraseToAnyPublisher()
+            }
             .mapError { error in
                 if let tmdbError = error as? TMDBNetworkingError {
                     return tmdbError
@@ -94,6 +103,32 @@ public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable 
         components.queryItems = queryItems
 
         return components.url
+    }
+
+    private func shouldRetry(_ error: Error) -> Bool {
+        switch error {
+        case let networkError as TMDBNetworkingError:
+            switch networkError {
+            case .networkError: return true   // Network connectivity issues
+            case .httpError(let code):
+                return (500...599).contains(code)  // Server errors (5xx)
+            case .invalidURL, .decodingError: return false  // Client errors, don't retry
+            }
+        case let urlError as URLError:
+            switch urlError.code {
+            case .timedOut,
+                    .cannotConnectToHost,
+                    .networkConnectionLost,
+                    .notConnectedToInternet,
+                    .cannotFindHost,
+                    .dnsLookupFailed:
+                return true  // Network connectivity issues that should be retried
+            default:
+                return false  // Other URL errors (400, 401, etc.) don't retry
+            }
+        default:
+            return false  // Unknown errors, don't retry
+        }
     }
 
     // MARK: - Logging Helpers

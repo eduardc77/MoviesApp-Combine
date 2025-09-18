@@ -134,10 +134,9 @@ public final class SearchViewModel {
     public var canLoadMore: Bool { page < totalPages }
 
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
+    
     public func toggleFavorite(_ id: Int) {
-        if let movie = items.first(where: { $0.id == id }) {
-            favoritesStore.addToFavorites(movie: movie)
-        }
+        _ = favoritesStore.toggleFavorite(movieId: id, in: items)
     }
 
     public func loadNextIfNeeded(currentItem: Movie?) {

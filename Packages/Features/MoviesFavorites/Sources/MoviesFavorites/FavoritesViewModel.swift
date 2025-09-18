@@ -96,7 +96,10 @@ public final class FavoritesViewModel {
         }
     }
 
-    public func toggleFavorite(_ id: Int) { favoritesStore.removeFromFavorites(movieId: id) }
+    public func toggleFavorite(_ id: Int) {
+        _ = favoritesStore.toggleFavorite(movieId: id, in: items)
+    }
+
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.isFavorite(movieId: id) }
 
     public func setSortOrder(_ order: MovieSortOrder) {
