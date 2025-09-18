@@ -1,4 +1,4 @@
-# 🎬 Movies-App
+# 🎬 MoviesApp - Combine
 
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
 ![iOS](https://img.shields.io/badge/iOS-17.0+-blue)
