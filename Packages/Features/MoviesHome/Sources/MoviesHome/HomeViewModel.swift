@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 import SharedModels
 import MoviesDomain
 import AppLog
@@ -26,7 +25,6 @@ public final class HomeViewModel {
 
     @ObservationIgnored private let repository: MovieRepositoryProtocol
     @ObservationIgnored private let favoritesStore: FavoritesStoreProtocol
-    @ObservationIgnored private var currentRequest: AnyCancellable?
 
     public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol) {
         self.repository = repository
@@ -58,10 +56,10 @@ public final class HomeViewModel {
     public func refresh() async {
         AppLog.home.info("HOME PULL-TO-REFRESH: \(category)")
         // Reset and reload data
-        load(reset: true)
+        await load(reset: true)
     }
 
-    public func load(reset: Bool = true) {
+    public func load(reset: Bool = true) async {
         let next = reset ? 1 : page + 1
         AppLog.home.info("HOME REQUEST reset:\(reset) next:\(next) cat:\(category) sort:\(String(describing: self.sortOrder))")
 
@@ -77,34 +75,36 @@ public final class HomeViewModel {
         // Use user-selected sort order or default for category
         let effectiveSortOrder = sortOrder ?? getDefaultSortOrder(for: category)
 
-        let pagePublisher = repository.fetchMovies(
-            type: category,
-            page: next,
-            sortBy: effectiveSortOrder
-        )
+        do {
+            let page = try await repository.fetchMovies(
+                type: category,
+                page: next,
+                sortBy: effectiveSortOrder
+            )
 
-        currentRequest = pagePublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self else { return }
-                self.isLoading = false
-                self.isLoadingNext = false
-                self.currentRequest = nil
-                if case .failure(let err) = completion { self.error = err }
-            }, receiveValue: { [weak self] page in
-                guard let self else { return }
+            AppLog.home.info("HOME RESPONSE page:\(page.page) items:\(page.items.count)")
 
-                AppLog.home.info("HOME RESPONSE page:\(page.page) items:\(page.items.count)")
+            // Process pagination
+            self.page = page.page
+            self.totalPages = page.totalPages
 
-                // Process pagination
-                self.page = page.page
-                self.totalPages = page.totalPages
-
+            if reset {
+                self.items = page.items
+            } else {
                 // Handle duplicates and append new items
                 let existing = Set(self.items.map(\.id))
                 let newItems = page.items.filter { !existing.contains($0.id) }
                 self.items.append(contentsOf: newItems)
-            })
+            }
+
+            self.isLoading = false
+            self.isLoadingNext = false
+        } catch {
+            self.error = error
+            self.isLoading = false
+            self.isLoadingNext = false
+            AppLog.home.error("Failed to load movies: \(error.localizedDescription)")
+        }
     }
 
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.favoriteMovieIds.contains(id) }
@@ -113,27 +113,23 @@ public final class HomeViewModel {
         _ = favoritesStore.toggleFavorite(movieId: id, in: items)
     }
 
-    public func setSortOrder(_ order: MovieSortOrder) {
+    public func setSortOrder(_ order: MovieSortOrder) async {
         // Store the previous sort order to detect changes
         sortOrder = order
 
         // Always reload when sorting changes
-        load(reset: true)
+        await load(reset: true)
     }
 
-    public func clearSortOrder() {
+    public func clearSortOrder() async {
         if sortOrder != nil {
             sortOrder = nil
-            load(reset: true)
+            await load(reset: true)
         }
     }
 
     /// Resets state and manages loading status
     private func resetState(startLoading: Bool = false) {
-        // Cancel any in-flight requests to prevent memory leaks
-        currentRequest?.cancel()
-        currentRequest = nil
-
         // Reset all state
         isLoading = startLoading
         isLoadingNext = false
@@ -143,11 +139,11 @@ public final class HomeViewModel {
         totalPages = 1
     }
 
-    public func loadNextIfNeeded(currentItem: Movie?) {
+    public func loadNextIfNeeded(currentItem: Movie?) async {
         guard let id = currentItem?.id,
               let idx = items.firstIndex(where: { $0.id == id }),
               idx >= max(items.count - 3, 0) else { return }
-        load(reset: false)
+        await load(reset: false)
     }
 
     // MARK: - Helpers
@@ -163,9 +159,9 @@ public final class HomeViewModel {
     }
 
     // MARK: - Category switching
-    public func setCategory(_ newCategory: MovieType) {
+    public func setCategory(_ newCategory: MovieType) async {
         guard newCategory != category else { return }
         category = newCategory
-        load(reset: true)
+        await load(reset: true)
     }
 }

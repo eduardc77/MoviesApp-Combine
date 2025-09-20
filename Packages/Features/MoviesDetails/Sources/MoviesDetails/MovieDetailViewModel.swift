@@ -4,7 +4,6 @@
 //
 
 import Foundation
-import Combine
 import MoviesDomain
 
 @MainActor
@@ -17,13 +16,14 @@ public final class MovieDetailViewModel {
     @ObservationIgnored private let repository: MovieRepositoryProtocol
     @ObservationIgnored private let favoritesStore: FavoritesStoreProtocol
     @ObservationIgnored private let movieId: Int
-    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol, movieId: Int) {
         self.repository = repository
         self.favoritesStore = favoritesStore
         self.movieId = movieId
-        fetch()
+        Task {
+            await fetch()
+        }
         // Offline-first: try local details snapshot
         if let local = favoritesStore.getFavoriteDetails(movieId: movieId), self.movie == nil {
             self.movie = local
@@ -48,19 +48,18 @@ public final class MovieDetailViewModel {
         }
     }
 
-    public func fetch() {
+    public func fetch() async {
         isLoading = true
         error = nil
-        repository.fetchMovieDetails(id: movieId)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self else { return }
-                self.isLoading = false
-                if case .failure(let err) = completion { self.error = err }
-            }, receiveValue: { [weak self] details in
-                self?.movie = details
-            })
-            .store(in: &cancellables)
+
+        do {
+            let details = try await repository.fetchMovieDetails(id: movieId)
+            self.movie = details
+            self.isLoading = false
+        } catch {
+            self.error = error
+            self.isLoading = false
+        }
     }
 
     public func toggleFavorite() {

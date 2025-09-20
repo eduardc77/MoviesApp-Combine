@@ -5,7 +5,6 @@
 //  Created by User on 9/16/25.
 //
 
-import Combine
 import SharedModels
 import MoviesDomain
 import MoviesNetwork
@@ -19,52 +18,46 @@ public final class MovieRepository: MovieRepositoryProtocol {
         self.remoteDataSource = remoteDataSource
     }
 
-    public func fetchMovies(type: MovieType) -> AnyPublisher<[Movie], Error> {
-        return remoteDataSource.fetchMovies(type: type)
-            .map { DTOMapper.toDomain($0.results) }
-            .mapError { MovieRepository.mapToDomainError($0) }
-            .eraseToAnyPublisher()
+    public func fetchMovies(type: MovieType) async throws -> [Movie] {
+        let response = try await remoteDataSource.fetchMovies(type: type)
+        return DTOMapper.toDomain(response.results)
     }
 
-    public func fetchMovies(type: MovieType, page: Int) -> AnyPublisher<MoviePage, Error> {
-        return remoteDataSource.fetchMovies(type: type, page: page)
-            .map { (response: MoviesResponseDTO) in
-                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
-            }
-            .mapError { MovieRepository.mapToDomainError($0) }
-            .eraseToAnyPublisher()
+    public func fetchMovies(type: MovieType, page: Int) async throws -> MoviePage {
+        let response = try await remoteDataSource.fetchMovies(type: type, page: page)
+        return MoviePage(
+            items: DTOMapper.toDomain(response.results),
+            page: response.page,
+            totalPages: response.totalPages
+        )
     }
 
-    public func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) -> AnyPublisher<MoviePage, Error> {
-        return remoteDataSource.fetchMovies(type: type, page: page, sortBy: sortBy?.tmdbSortValue)
-            .map { (response: MoviesResponseDTO) in
-                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
-            }
-            .mapError { MovieRepository.mapToDomainError($0) }
-            .eraseToAnyPublisher()
+    public func fetchMovies(type: MovieType, page: Int, sortBy: MovieSortOrder?) async throws -> MoviePage {
+        let response = try await remoteDataSource.fetchMovies(type: type, page: page, sortBy: sortBy?.tmdbSortValue)
+        return MoviePage(
+            items: DTOMapper.toDomain(response.results),
+            page: response.page,
+            totalPages: response.totalPages
+        )
     }
 
-    public func searchMovies(query: String) -> AnyPublisher<[Movie], Error> {
-        return remoteDataSource.searchMovies(query: query)
-            .map { DTOMapper.toDomain($0.results) }
-            .mapError { MovieRepository.mapToDomainError($0) }
-            .eraseToAnyPublisher()
+    public func searchMovies(query: String) async throws -> [Movie] {
+        let response = try await remoteDataSource.searchMovies(query: query)
+        return DTOMapper.toDomain(response.results)
     }
 
-    public func searchMovies(query: String, page: Int) -> AnyPublisher<MoviePage, Error> {
-        return remoteDataSource.searchMovies(query: query, page: page)
-            .map { (response: MoviesResponseDTO) in
-                MoviePage(items: DTOMapper.toDomain(response.results), page: response.page, totalPages: response.totalPages)
-            }
-            .mapError { MovieRepository.mapToDomainError($0) }
-            .eraseToAnyPublisher()
+    public func searchMovies(query: String, page: Int) async throws -> MoviePage {
+        let response = try await remoteDataSource.searchMovies(query: query, page: page)
+        return MoviePage(
+            items: DTOMapper.toDomain(response.results),
+            page: response.page,
+            totalPages: response.totalPages
+        )
     }
 
-    public func fetchMovieDetails(id: Int) -> AnyPublisher<MovieDetails, Error> {
-        return remoteDataSource.fetchMovieDetails(id: id)
-            .map { DTOMapper.toDomain($0) }
-            .mapError { MovieRepository.mapToDomainError($0) }
-            .eraseToAnyPublisher()
+    public func fetchMovieDetails(id: Int) async throws -> MovieDetails {
+        let response = try await remoteDataSource.fetchMovieDetails(id: id)
+        return DTOMapper.toDomain(response)
     }
 }
 

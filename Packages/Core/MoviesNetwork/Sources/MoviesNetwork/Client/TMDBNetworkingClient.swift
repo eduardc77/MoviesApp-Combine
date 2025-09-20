@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 import AppLog
 
 /// HTTP client for TMDB API operations
@@ -24,61 +23,53 @@ public final class TMDBNetworkingClient: TMDBNetworkingClientProtocol, Sendable 
         self.decoder.keyDecodingStrategy = .convertFromSnakeCase
     }
 
-    public func request<T: Decodable>(_ endpoint: EndpointProtocol) -> AnyPublisher<T, Error> {
+    public func request<T: Decodable>(_ endpoint: EndpointProtocol) async throws -> T {
         guard let url = buildURL(for: endpoint) else {
-            return Fail(error: TMDBNetworkingError.invalidURL)
-                .eraseToAnyPublisher()
+            throw TMDBNetworkingError.invalidURL
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method.rawValue
-        request.httpBody = endpoint.body
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = endpoint.method.rawValue
+        urlRequest.httpBody = endpoint.body
 
         // Set default headers
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Accept")
 
         // Add endpoint-specific headers
         for (key, value) in endpoint.headers {
-            request.setValue(value, forHTTPHeaderField: key)
+            urlRequest.setValue(value, forHTTPHeaderField: key)
         }
 
-        return session.dataTaskPublisher(for: request)
-            .tryMap { output -> Data in
-                if let httpResponse = output.response as? HTTPURLResponse,
-                   !(200...299).contains(httpResponse.statusCode) {
-                    throw TMDBNetworkingError.httpError(httpResponse.statusCode)
-                }
-                return output.data
+        do {
+            let (data, response) = try await session.data(for: urlRequest)
+
+            if let httpResponse = response as? HTTPURLResponse,
+               !(200...299).contains(httpResponse.statusCode) {
+                throw TMDBNetworkingError.httpError(httpResponse.statusCode)
             }
-            .tryMap { data -> T in
-                do {
-                    return try self.decoder.decode(T.self, from: data)
-                } catch let decodingError as DecodingError {
-                    // Log detailed decoding failure information
-                    self.logDecodingFailure(decodingError, rawData: data, endpoint: endpoint)
-                    throw TMDBNetworkingError.decodingError(decodingError)
-                } catch {
-                    // Log other decoding errors
-                    AppLog.network.error("Unexpected decoding error for \(endpoint.path): \(error.localizedDescription)")
-                    throw TMDBNetworkingError.networkError(error)
-                }
+
+            do {
+                return try decoder.decode(T.self, from: data)
+            } catch let decodingError as DecodingError {
+                // Log detailed decoding failure information
+                logDecodingFailure(decodingError, rawData: data, endpoint: endpoint)
+                throw TMDBNetworkingError.decodingError(decodingError)
+            } catch {
+                // Log other decoding errors
+                AppLog.network.error("Unexpected decoding error for \(endpoint.path): \(error.localizedDescription)")
+                throw TMDBNetworkingError.networkError(error)
             }
-            .catch { error -> AnyPublisher<T, Error> in
-                if self.shouldRetry(error) {
-                    AppLog.network.log("Retrying request: \(error.localizedDescription)")
-                    return self.request(endpoint)  // Recursive retry
-                        .delay(for: .seconds(1), scheduler: DispatchQueue.global())
-                        .eraseToAnyPublisher()
-                }
-                return Fail(error: error).eraseToAnyPublisher()
+        } catch let error as TMDBNetworkingError {
+            throw error
+        } catch {
+            // Handle network errors and retry logic
+            if shouldRetry(error) {
+                AppLog.network.log("Retrying request after error: \(error.localizedDescription)")
+                try await Task.sleep(for: .seconds(1))
+                return try await request(endpoint)
             }
-            .mapError { error in
-                if let tmdbError = error as? TMDBNetworkingError {
-                    return tmdbError
-                }
-                return TMDBNetworkingError.networkError(error)
-            }
-            .eraseToAnyPublisher()
+            throw TMDBNetworkingError.networkError(error)
+        }
     }
 
     // MARK: - Convenience session factory

@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import Combine
 import SharedModels
 @testable import MoviesDetails
 @testable import MoviesDomain
@@ -57,7 +56,7 @@ final class MovieDetailIntegrationTests: XCTestCase {
         return MovieRepository(remoteDataSource: remote)
     }
 
-    func testViewModelFetchesDetailsViaRepositoryStubbedByURLProtocol() {
+    func testViewModelFetchesDetailsViaRepositoryStubbedByURLProtocol() async throws {
         // Arrange network stub with a minimal TMDB details payload
         struct Payload: Codable {
             let id: Int; let title: String; let overview: String
@@ -67,7 +66,7 @@ final class MovieDetailIntegrationTests: XCTestCase {
             struct Genre: Codable { let id: Int; let name: String }
         }
 
-        let body = try! JSONEncoder().encode(Payload(
+        let body = try JSONEncoder().encode(Payload(
             id: 99, title: "X", overview: "O", poster_path: nil, backdrop_path: nil,
             release_date: "2020-01-01", vote_average: 7.0, vote_count: 10, runtime: nil,
             genres: []
@@ -81,7 +80,10 @@ final class MovieDetailIntegrationTests: XCTestCase {
         let repo = makeRepository()
         let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSourceStub())
         let vm = MovieDetailViewModel(repository: repo, favoritesStore: store, movieId: 99)
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+
+        // Wait for async initialization to complete
+        try await Task.sleep(for: .milliseconds(200))
+
         XCTAssertEqual(vm.movie?.id, 99)
     }
 }

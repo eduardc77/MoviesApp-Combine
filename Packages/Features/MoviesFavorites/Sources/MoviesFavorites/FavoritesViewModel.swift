@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 import Observation
 import MoviesDomain
 
@@ -21,7 +20,6 @@ public final class FavoritesViewModel {
 
     @ObservationIgnored private let repository: MovieRepositoryProtocol
     public let favoritesStore: FavoritesStoreProtocol
-    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
     @ObservationIgnored private var currentPage = 1
     @ObservationIgnored private var pageSize = 20
     @ObservationIgnored private var canLoadMore = true
