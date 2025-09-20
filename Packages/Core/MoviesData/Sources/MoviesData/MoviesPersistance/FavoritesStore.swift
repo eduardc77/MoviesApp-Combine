@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Combine
 import MoviesDomain
 import AppLog
 
@@ -17,45 +16,38 @@ public final class FavoritesStore {
     @ObservationIgnored private let repository: FavoritesRepositoryProtocol
     /// Reactive set of favorite movie IDs
     public var favoriteMovieIds: Set<Int> = []
-    /// Cancellables for managing subscriptions
-    @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
-    /// Initialize with Combine-based loading
+    /// Initialize with synchronous loading
     public init(favoritesLocalDataSource: FavoritesLocalDataSourceProtocol = FavoritesLocalDataSource()) {
         self.repository = FavoritesRepository(localDataSource: favoritesLocalDataSource)
         loadFavorites()
     }
 
-    /// Load favorites from storage using Combine
+    /// Load favorites from storage synchronously
     private func loadFavorites() {
-        repository.getFavoriteMovieIds()
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    AppLog.persistence.error("Failed to load favorites: \(String(describing: error))")
-                }
-            }, receiveValue: { [weak self] favorites in
-                self?.favoriteMovieIds = favorites
-            })
-            .store(in: &cancellables)
+        do {
+            let favorites = try repository.getFavoriteMovieIds()
+            self.favoriteMovieIds = favorites
+        } catch {
+            AppLog.persistence.error("Failed to load favorites: \(String(describing: error))")
+        }
     }
 
     /// Remove favorite by id
     private func removeFavorite(for movieId: Int) {
         guard favoriteMovieIds.contains(movieId) else { return }
-        favoriteMovieIds.remove(movieId)
-        repository.removeFromFavorites(movieId: movieId)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                guard let self else { return }
-                if case .failure = completion { self.favoriteMovieIds.insert(movieId) }
-            }, receiveValue: { _ in })
-            .store(in: &cancellables)
-    }
 
-    /// Check if movie is favorited
-    private func isFavorite(movieId: Int) -> AnyPublisher<Bool, Error> {
-        repository.isMovieFavorited(movieId: movieId)
+        // Optimistic update - remove from UI immediately
+        favoriteMovieIds.remove(movieId)
+
+        // Try to persist the change
+        do {
+            try repository.removeFromFavorites(movieId: movieId)
+        } catch {
+            // Rollback on failure - add back to UI
+            favoriteMovieIds.insert(movieId)
+            AppLog.persistence.error("Failed to remove favorite \(movieId): \(error)")
+        }
     }
 }
 
@@ -64,51 +56,44 @@ extension FavoritesStore: FavoritesStoreProtocol {
     public func isFavorite(movieId: Int) -> Bool { favoriteMovieIds.contains(movieId) }
     public func removeFromFavorites(movieId: Int) { removeFavorite(for: movieId) }
     public func addToFavorites(movie: Movie) {
-        repository.addToFavorites(movie: movie)
-            .sink(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    AppLog.persistence.error("Failed to add favorite snapshot: \(error)")
-                }
-            }, receiveValue: { [weak self] in
-                self?.favoriteMovieIds.insert(movie.id)
-            })
-            .store(in: &cancellables)
+        // Optimistic update - add to UI immediately
+        favoriteMovieIds.insert(movie.id)
+
+        // Try to persist the change
+        do {
+            try repository.addToFavorites(movie: movie)
+        } catch {
+            // Rollback on failure - remove from UI
+            favoriteMovieIds.remove(movie.id)
+            AppLog.persistence.error("Failed to add favorite \(movie.id): \(error)")
+        }
     }
 
     public func addToFavorites(details: MovieDetails) {
-        repository.addToFavorites(details: details)
-            .sink(receiveCompletion: { completion in
-                if case .failure(let error) = completion {
-                    AppLog.persistence.error("Failed to add favorite snapshot: \(error)")
-                }
-            }, receiveValue: { [weak self] in
-                self?.favoriteMovieIds.insert(details.id)
-            })
-            .store(in: &cancellables)
-    }
+        // Optimistic update - add to UI immediately
+        favoriteMovieIds.insert(details.id)
 
-    public func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) async throws -> [Movie] {
-        try await withCheckedThrowingContinuation { continuation in
-            repository.getFavorites(page: page, pageSize: pageSize, sortOrder: sortOrder)
-                .sink(receiveCompletion: { completion in
-                    if case .failure(let error) = completion { continuation.resume(throwing: error) }
-                }, receiveValue: { movies in
-                    continuation.resume(returning: movies)
-                })
-                .store(in: &cancellables)
+        // Try to persist the change
+        do {
+            try repository.addToFavorites(details: details)
+        } catch {
+            // Rollback on failure - remove from UI
+            favoriteMovieIds.remove(details.id)
+            AppLog.persistence.error("Failed to add favorite \(details.id): \(error)")
         }
     }
 
-    public func getFavoriteDetails(movieId: Int) async throws -> MovieDetails? {
-        try await withCheckedThrowingContinuation { continuation in
-            repository.getFavoriteDetails(movieId: movieId)
-                .sink(receiveCompletion: { completion in
-                    if case .failure(let error) = completion { continuation.resume(throwing: error) }
-                }, receiveValue: { details in
-                    continuation.resume(returning: details)
-                })
-                .store(in: &cancellables)
+    public func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) -> [Movie] {
+        do {
+            return try repository.getFavorites(page: page, pageSize: pageSize, sortOrder: sortOrder)
+        } catch {
+            AppLog.persistence.error("Failed to get favorites: \(error)")
+            return []
         }
+    }
+
+    public func getFavoriteDetails(movieId: Int) -> MovieDetails? {
+        repository.getFavoriteDetails(movieId: movieId)
     }
 
     /// Toggle favorite status for a movie in a collection
@@ -129,6 +114,7 @@ extension FavoritesStore: FavoritesStoreProtocol {
         // Movie not found in items, return current status
         return isFavorite(movieId: movieId)
     }
+
 
     /// Toggle favorite status for movie details
     /// - Parameters:

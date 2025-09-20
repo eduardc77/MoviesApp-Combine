@@ -24,12 +24,9 @@ public final class MovieDetailViewModel {
         self.favoritesStore = favoritesStore
         self.movieId = movieId
         fetch()
-        Task { [weak self] in
-            guard let self else { return }
-            // Offline-first: try local details snapshot
-            if let local = try? await favoritesStore.getFavoriteDetails(movieId: movieId), self.movie == nil {
-                self.movie = local
-            }
+        // Offline-first: try local details snapshot
+        if let local = favoritesStore.getFavoriteDetails(movieId: movieId), self.movie == nil {
+            self.movie = local
         }
     }
 

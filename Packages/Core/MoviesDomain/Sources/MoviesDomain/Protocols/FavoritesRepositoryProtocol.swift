@@ -10,23 +10,23 @@ import Combine
 /// Protocol for managing favorite movies
 public protocol FavoritesRepositoryProtocol {
     /// Gets all favorite movie IDs
-    func getFavoriteMovieIds() -> AnyPublisher<Set<Int>, Error>
+    func getFavoriteMovieIds() throws -> Set<Int>
 
     /// Checks if a movie is favorited
-    func isMovieFavorited(movieId: Int) -> AnyPublisher<Bool, Error>
+    func isMovieFavorited(movieId: Int) -> Bool
 
     /// Removes favorite by id
-    func removeFromFavorites(movieId: Int) -> AnyPublisher<Void, Error>
+    func removeFromFavorites(movieId: Int) throws
 
     /// Adds a snapshot of a Movie to favorites
-    func addToFavorites(movie: Movie) -> AnyPublisher<Void, Error>
+    func addToFavorites(movie: Movie) throws
 
     /// Adds a snapshot of MovieDetails to favorites
-    func addToFavorites(details: MovieDetails) -> AnyPublisher<Void, Error>
+    func addToFavorites(details: MovieDetails) throws
 
     /// Fetch a page of favorited movies from local storage
-    func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) -> AnyPublisher<[Movie], Error>
+    func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) throws -> [Movie]
 
     /// Fetch locally stored favorite details snapshot if available
-    func getFavoriteDetails(movieId: Int) -> AnyPublisher<MovieDetails?, Error>
+    func getFavoriteDetails(movieId: Int) -> MovieDetails?
 }
