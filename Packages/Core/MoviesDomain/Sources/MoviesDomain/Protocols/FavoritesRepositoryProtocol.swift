@@ -5,8 +5,6 @@
 //  Created by User on 9/14/25.
 //
 
-import Combine
-
 /// Protocol for managing favorite movies
 public protocol FavoritesRepositoryProtocol {
     /// Gets all favorite movie IDs
