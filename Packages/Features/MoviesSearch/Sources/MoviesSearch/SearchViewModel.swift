@@ -146,11 +146,8 @@ public final class SearchViewModel {
 
     /// Resets state and manages loading status
     private func resetState(startLoading: Bool = false) {
-        // Cancel any in-flight search task
-        currentSearchTask?.cancel()
-        currentSearchTask = nil
-
-        // Reset all state
+        // Don't cancel the current task if we're being called from within it
+        // Just reset the state without cancelling
         isLoading = startLoading
         isLoadingNext = false
         error = nil
@@ -166,6 +163,9 @@ public final class SearchViewModel {
 
     /// Cancels ongoing requests and clears state (stops loading)
     private func cancelAndClear() {
+        // Cancel any in-flight search task when clearing
+        currentSearchTask?.cancel()
+        currentSearchTask = nil
         resetState(startLoading: false)
     }
 }
