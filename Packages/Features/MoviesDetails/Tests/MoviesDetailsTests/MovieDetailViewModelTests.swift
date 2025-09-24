@@ -9,6 +9,7 @@ import XCTest
 import Combine
 import SharedModels
 import MoviesDomain
+import SwiftData
 @testable import MoviesDetails
 @testable import MoviesDomain
 @testable import MoviesData
@@ -113,7 +114,8 @@ private final class FailingRepoMock: MovieRepositoryProtocol {
 final class MovieDetailViewModelTests: XCTestCase {
     func testFetchLifecycleAndToggleFavorite() {
         let repo = RepoMock()
-        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource())
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource(), container: container)
         let vm = MovieDetailViewModel(repository: repo, favoritesStore: store, movieId: 7)
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         XCTAssertEqual(vm.movie?.id, 7)
@@ -124,7 +126,8 @@ final class MovieDetailViewModelTests: XCTestCase {
 
     func testFetchSetsErrorOnFailure() {
         let repo = FailingRepoMock()
-        let store = FavoritesStore()
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource(), container: container)
         let vm = MovieDetailViewModel(repository: repo, favoritesStore: store, movieId: 1)
         RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         XCTAssertNotNil(vm.error)

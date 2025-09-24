@@ -6,8 +6,10 @@
 //
 
 import Foundation
+import Combine
 import MoviesDomain
 import AppLog
+import SwiftData
 
 @MainActor
 @Observable
@@ -16,10 +18,12 @@ public final class FavoritesStore {
     @ObservationIgnored private let repository: FavoritesRepositoryProtocol
     /// Reactive set of favorite movie IDs
     public var favoriteMovieIds: Set<Int> = []
+    @ObservationIgnored private let backgroundFetcher: FavoritesBackgroundFetcher
 
     /// Initialize with synchronous loading
-    public init(favoritesLocalDataSource: FavoritesLocalDataSourceProtocol = FavoritesLocalDataSource()) {
+    public init(favoritesLocalDataSource: FavoritesLocalDataSourceProtocol = FavoritesLocalDataSource(), container: ModelContainer) {
         self.repository = FavoritesRepository(localDataSource: favoritesLocalDataSource)
+        self.backgroundFetcher = FavoritesBackgroundFetcher(container: container)
         loadFavorites()
     }
 
@@ -83,15 +87,6 @@ extension FavoritesStore: FavoritesStoreProtocol {
         }
     }
 
-    public func getFavorites(page: Int, pageSize: Int, sortOrder: MovieSortOrder?) -> [Movie] {
-        do {
-            return try repository.getFavorites(page: page, pageSize: pageSize, sortOrder: sortOrder)
-        } catch {
-            AppLog.persistence.error("Failed to get favorites: \(error)")
-            return []
-        }
-    }
-
     public func getFavoriteDetails(movieId: Int) -> MovieDetails? {
         repository.getFavoriteDetails(movieId: movieId)
     }
@@ -133,5 +128,24 @@ extension FavoritesStore: FavoritesStoreProtocol {
         }
         // No details provided, return current status
         return isFavorite(movieId: movieId)
+    }
+
+    // MARK: - Combine paging APIs
+    public func fetchAllFavorites(sortOrder: MovieSortOrder?) -> AnyPublisher<[Movie], Never> {
+        backgroundFetcher.fetchAllFavorites(sortedBy: sortOrder)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+
+    public func fetchFirstPage(sortOrder: MovieSortOrder, pageSize: Int) -> AnyPublisher<(items: [Movie], cursor: FavoritesPageCursor?), Never> {
+        backgroundFetcher.fetchFirstPage(sortedBy: sortOrder, pageSize: pageSize)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+
+    public func fetchNextPage(cursor: FavoritesPageCursor, pageSize: Int) -> AnyPublisher<(items: [Movie], cursor: FavoritesPageCursor?), Never> {
+        backgroundFetcher.fetchNextPage(cursor: cursor, pageSize: pageSize)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
 }

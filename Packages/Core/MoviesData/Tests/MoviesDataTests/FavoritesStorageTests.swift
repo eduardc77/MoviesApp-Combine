@@ -120,13 +120,10 @@ final class FavoritesStorageTests: XCTestCase {
             let ids = try sut.getFavoriteMovieIds()
             XCTAssertEqual(ids.count, totalMovies)
 
-            // Test getFavorites with different parameters
-            let allMovies = try sut.getFavorites(page: 1, pageSize: 50, sortOrder: nil)
-            XCTAssertEqual(allMovies.count, 50)
-
-            // Test pagination
-            let page2Movies = try sut.getFavorites(page: 2, pageSize: 50, sortOrder: nil)
-            XCTAssertEqual(page2Movies.count, 50)
+            // Sanity check a few stored snapshots are retrievable as details
+            XCTAssertNotNil(sut.getFavoriteDetails(movieId: 0))
+            XCTAssertNotNil(sut.getFavoriteDetails(movieId: 25))
+            XCTAssertNotNil(sut.getFavoriteDetails(movieId: 99))
 
             // Remove half the movies
             for i in 0..<50 {

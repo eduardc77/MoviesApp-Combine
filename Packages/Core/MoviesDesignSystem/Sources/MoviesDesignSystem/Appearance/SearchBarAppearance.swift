@@ -31,14 +31,14 @@ public enum SearchBarAppearance {
         }
         let searchTF = UISearchTextField.appearance(whenContainedInInstancesOf: [UISearchBar.self])
         searchTF.backgroundColor = UIColor.systemGray6
-        searchTF.textColor = .black
-        searchTF.tintColor = .black
+        searchTF.textColor = .label
+        searchTF.tintColor = .label
         searchTF.attributedPlaceholder = NSAttributedString(
             string: "Search Movies",
             attributes: [.foregroundColor: UIColor.systemGray]
         )
         searchTF.defaultTextAttributes = [
-            NSAttributedString.Key.foregroundColor: UIColor.black,
+            NSAttributedString.Key.foregroundColor: UIColor.label,
             NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .body),
         ]
         // Set search bar icon tint color

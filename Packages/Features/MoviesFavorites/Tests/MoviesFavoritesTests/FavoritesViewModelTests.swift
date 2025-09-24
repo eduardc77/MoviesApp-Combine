@@ -11,6 +11,7 @@ import SharedModels
 @testable import MoviesDomain
 @testable import MoviesData
 import Combine
+import SwiftData
 
 private class InMemoryFavoritesLocalDataSource: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
     private var ids = Set<Int>()
@@ -86,8 +87,9 @@ private final class RepoMock: MovieRepositoryProtocol {
 final class FavoritesViewModelTests: XCTestCase {
     func testReloadReflectsFavoritesAfterAdd() {
         let repo = RepoMock()
-        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource())
-        let vm = FavoritesViewModel(repository: repo, favoritesStore: store)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: FavoritesLocalDataSource(container: container), container: container)
+        let vm = FavoritesViewModel(favoritesStore: store)
 
         // Initially empty
         vm.reload()
@@ -109,8 +111,9 @@ final class FavoritesViewModelTests: XCTestCase {
 
     func testFavoritesStoreIsAccessibleForObservation() {
         let repo = RepoMock()
-        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource())
-        let vm = FavoritesViewModel(repository: repo, favoritesStore: store)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSource(), container: container)
+        let vm = FavoritesViewModel(favoritesStore: store)
 
         // Verify ViewModel exposes store for View observation
         XCTAssertNotNil(vm.favoritesStore)

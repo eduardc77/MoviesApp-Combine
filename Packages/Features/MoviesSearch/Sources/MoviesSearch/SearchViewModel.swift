@@ -119,7 +119,11 @@ public final class SearchViewModel {
                 self.isLoading = false
                 self.isLoadingNext = false
                 self.currentRequest = nil
-                if case .failure(let error) = completion { self.error = error }
+                if case .failure(let error) = completion {
+                    if (error is CancellationError) { return }
+                    if let urlError = error as? URLError, urlError.code == .cancelled { return }
+                    self.error = error
+                }
             }, receiveValue: { [weak self] page in
                 guard let self else { return }
                 self.page = page.page

@@ -8,6 +8,7 @@
 import XCTest
 import Combine
 import SharedModels
+import SwiftData
 @testable import MoviesDetails
 @testable import MoviesDomain
 @testable import MoviesNetwork
@@ -79,7 +80,8 @@ final class MovieDetailIntegrationTests: XCTestCase {
         }
 
         let repo = makeRepository()
-        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSourceStub())
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: InMemoryFavoritesLocalDataSourceStub(), container: container)
         let vm = MovieDetailViewModel(repository: repo, favoritesStore: store, movieId: 99)
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
         XCTAssertEqual(vm.movie?.id, 99)

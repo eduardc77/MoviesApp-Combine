@@ -90,7 +90,11 @@ public final class HomeViewModel {
                 self.isLoading = false
                 self.isLoadingNext = false
                 self.currentRequest = nil
-                if case .failure(let err) = completion { self.error = err }
+                if case .failure(let err) = completion {
+                    if (err is CancellationError) { return }
+                    if let urlError = err as? URLError, urlError.code == .cancelled { return }
+                    self.error = err
+                }
             }, receiveValue: { [weak self] page in
                 guard let self else { return }
 

@@ -7,6 +7,7 @@
 
 import XCTest
 import MoviesDomain
+import SwiftData
 @testable import MoviesData
 
 private final class LocalDataSourceMock: @unchecked Sendable, FavoritesLocalDataSourceProtocol {
@@ -86,7 +87,8 @@ final class FavoritesStoreTests: XCTestCase {
     func testInitialLoadPopulatesIds() {
         let mock = LocalDataSourceMock()
         mock.ids = [1,2]
-        let store = FavoritesStore(favoritesLocalDataSource: mock)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: mock, container: container)
         let exp = expectation(description: "loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             XCTAssertEqual(store.favoriteMovieIds, [1,2])
@@ -98,7 +100,8 @@ final class FavoritesStoreTests: XCTestCase {
     func testRemoveFavoriteOptimisticRollbackOnFailure() {
         let mock = LocalDataSourceMock()
         mock.ids = [10]
-        let store = FavoritesStore(favoritesLocalDataSource: mock)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: mock, container: container)
 
         // Verify initial state
         XCTAssertTrue(store.favoriteMovieIds.contains(10))
@@ -113,7 +116,8 @@ final class FavoritesStoreTests: XCTestCase {
 
     func testAddFavoriteOptimisticRollbackOnFailure() {
         let mock = LocalDataSourceMock()
-        let store = FavoritesStore(favoritesLocalDataSource: mock)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: mock, container: container)
 
         // Verify initial state (empty)
         XCTAssertFalse(store.favoriteMovieIds.contains(20))

@@ -56,7 +56,11 @@ public final class MovieDetailViewModel {
             .sink(receiveCompletion: { [weak self] completion in
                 guard let self else { return }
                 self.isLoading = false
-                if case .failure(let err) = completion { self.error = err }
+                if case .failure(let err) = completion {
+                    if (err is CancellationError) { return }
+                    if let urlError = err as? URLError, urlError.code == .cancelled { return }
+                    self.error = err
+                }
             }, receiveValue: { [weak self] details in
                 self?.movie = details
             })

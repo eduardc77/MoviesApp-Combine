@@ -85,7 +85,8 @@ final class FavoritesStoreTests: XCTestCase {
     func testInitialLoadPopulatesIds() {
         let mock = LocalDataSourceMock()
         mock.ids = [1,2]
-        let store = FavoritesStore(favoritesLocalDataSource: mock)
+        let container = try! ModelContainer(for: FavoriteMovieEntity.self, FavoriteGenreEntity.self)
+        let store = FavoritesStore(favoritesLocalDataSource: mock, container: container)
         let exp = expectation(description: "loaded")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             XCTAssertEqual(store.favoriteMovieIds, [1,2])

@@ -6,6 +6,7 @@
 //
 
 import Observation
+import Combine
 import MoviesDomain
 
 @MainActor
@@ -15,17 +16,15 @@ public final class FavoritesViewModel {
     public private(set) var isLoading: Bool = false
     public private(set) var isLoadingNext: Bool = false
     public private(set) var error: Error?
-    public var sortOrder: MovieSortOrder?
+    public var sortOrder: MovieSortOrder? = .recentlyAdded
 
-    @ObservationIgnored private let repository: MovieRepositoryProtocol
     public let favoritesStore: FavoritesStoreProtocol
-    @ObservationIgnored private var currentPage = 1
-    @ObservationIgnored private var pageSize = 20
-    @ObservationIgnored private var canLoadMore = true
-    @ObservationIgnored private var previousFavoriteIds: Set<Int> = []
+    @ObservationIgnored private var pageCursor: FavoritesPageCursor?
+    @ObservationIgnored private var pageSize = FavoritesPagingDefaults.pageSize
+    @ObservationIgnored private var previousFavoriteIds: Set<Int>? = nil
+    @ObservationIgnored private var cancellables: Set<AnyCancellable> = []
 
-    public init(repository: MovieRepositoryProtocol, favoritesStore: FavoritesStoreProtocol) {
-        self.repository = repository
+    public init(favoritesStore: FavoritesStoreProtocol) {
         self.favoritesStore = favoritesStore
     }
 
@@ -34,7 +33,7 @@ public final class FavoritesViewModel {
         case loading
         case error(Error)
         case empty
-        case content(items: [Movie], isLoadingNext: Bool)
+        case content(items: [Movie])
     }
 
     public var state: FavoritesViewState {
@@ -46,56 +45,37 @@ public final class FavoritesViewModel {
         case items.isEmpty:
             return .empty
         default:
-            return .content(items: items, isLoadingNext: isLoadingNext)
+            return .content(items: items)
         }
     }
 
     /// async refresh method for pull-to-refresh
     public func refresh() async { load(reset: true) }
 
-    public func reload() { favoritesDidChange() }
+    public func reload() { loadAll() }
 
     /// Called by the View when it detects changes via onChange
-    /// This allows the View to trigger incremental updates when the store's favorites change
+    /// Apply incremental updates for best animations and performance
     public func favoritesDidChange() {
+        if isLoading { return }
         let currentFavoriteIds = favoritesStore.favoriteMovieIds
-
-        // If this is the first time or we have no items, do a full load
-        if items.isEmpty {
-            load(reset: true)
+        guard let prev = previousFavoriteIds else {
+            previousFavoriteIds = currentFavoriteIds
             return
         }
+        let addedIds = currentFavoriteIds.subtracting(prev)
+        let removedIds = prev.subtracting(currentFavoriteIds)
+        if addedIds.isEmpty && removedIds.isEmpty { return }
 
-        // Convert current items to Set for comparison
-        let currentItemIds = Set(items.map { $0.id })
+        if !removedIds.isEmpty { items.removeAll { removedIds.contains($0.id) } }
 
-        // Find what was actually added and removed
-        let addedIds = currentFavoriteIds.subtracting(currentItemIds)
-        let removedIds = currentItemIds.subtracting(currentFavoriteIds)
-
-        // If nothing changed, ignore
-        if addedIds.isEmpty && removedIds.isEmpty {
-            return
-        }
-
-        // Remove movies that are no longer favorites
-        if !removedIds.isEmpty {
-            items.removeAll { removedIds.contains($0.id) }
-        }
-
-        // Add new favorites
         if !addedIds.isEmpty {
-            for movieId in addedIds {
-                if let movie = fetchMovieSync(movieId: movieId) {
-                    // Insert in sorted order if we have sorting, otherwise add to beginning
-                    if sortOrder != nil {
-                        insertMovieInSortedOrder(movie)
-                    } else {
-                        items.insert(movie, at: 0)
-                    }
-                }
-            }
+            var additions: [Movie] = []
+            for id in addedIds { if let d = favoritesStore.getFavoriteDetails(movieId: id) { additions.append(d.asMovie) } }
+            batchInsert(movies: additions, order: sortOrder)
         }
+
+        previousFavoriteIds = currentFavoriteIds
     }
 
     private func fetchMovieSync(movieId: Int) -> Movie? {
@@ -106,23 +86,82 @@ public final class FavoritesViewModel {
         return details.asMovie
     }
 
-    private func insertMovieInSortedOrder(_ movie: Movie) {
-        guard let sortOrder else {
-            // No sort order, insert at the beginning
+    private func sortMovies(_ movies: [Movie], for order: MovieSortOrder) -> [Movie] {
+        switch order {
+        case .popularityAscending:
+            return movies.sorted { lhs, rhs in
+                if lhs.popularity == rhs.popularity { return lhs.id < rhs.id }
+                return lhs.popularity < rhs.popularity
+            }
+        case .popularityDescending:
+            return movies.sorted { lhs, rhs in
+                if lhs.popularity == rhs.popularity { return lhs.id < rhs.id }
+                return lhs.popularity > rhs.popularity
+            }
+        case .ratingAscending:
+            return movies.sorted { lhs, rhs in
+                if lhs.voteAverage == rhs.voteAverage { return lhs.id < rhs.id }
+                return lhs.voteAverage < rhs.voteAverage
+            }
+        case .ratingDescending:
+            return movies.sorted { lhs, rhs in
+                if lhs.voteAverage == rhs.voteAverage { return lhs.id < rhs.id }
+                return lhs.voteAverage > rhs.voteAverage
+            }
+        case .releaseDateAscending:
+            return movies.sorted { lhs, rhs in
+                if lhs.releaseDate == rhs.releaseDate { return lhs.id < rhs.id }
+                return lhs.releaseDate < rhs.releaseDate
+            }
+        case .releaseDateDescending:
+            return movies.sorted { lhs, rhs in
+                if lhs.releaseDate == rhs.releaseDate { return lhs.id < rhs.id }
+                return lhs.releaseDate > rhs.releaseDate
+            }
+        case .recentlyAdded:
+            // stable fallback
+            return movies.sorted { $0.id < $1.id }
+        }
+    }
+
+    private func batchInsert(movies: [Movie], order: MovieSortOrder?) {
+        guard !movies.isEmpty else { return }
+        var newItems = self.items
+        let uniqueAdds = movies.filter { movie in !newItems.contains(where: { $0.id == movie.id }) }
+        guard !uniqueAdds.isEmpty else { return }
+
+        if let order {
+            if order == .recentlyAdded {
+                newItems.insert(contentsOf: uniqueAdds, at: 0)
+            } else {
+                let sortedAdds = sortMovies(uniqueAdds, for: order)
+                for movie in sortedAdds {
+                    let idx = newItems.firstIndex { existing in shouldInsertBefore(movie, existing, sortOrder: order) } ?? newItems.count
+                    newItems.insert(movie, at: idx)
+                }
+            }
+        } else {
+            newItems.insert(contentsOf: uniqueAdds, at: 0)
+        }
+
+        self.items = newItems
+    }
+
+    private func loadAll() {
+        load(reset: true)
+    }
+
+    private func insertMovie(_ movie: Movie, order: MovieSortOrder?) {
+        guard let order else {
             items.insert(movie, at: 0)
             return
         }
-
-        // Find the correct insertion point
-        for (index, existingMovie) in items.enumerated() {
-            if shouldInsertBefore(movie, existingMovie, sortOrder: sortOrder) {
-                items.insert(movie, at: index)
-                return
-            }
+        if order == .recentlyAdded {
+            items.insert(movie, at: 0)
+            return
         }
-
-        // If no suitable position found, append at the end
-        items.append(movie)
+        let idx = items.firstIndex { existing in shouldInsertBefore(movie, existing, sortOrder: order) } ?? items.count
+        items.insert(movie, at: idx)
     }
 
     private func shouldInsertBefore(_ newMovie: Movie, _ existingMovie: Movie, sortOrder: MovieSortOrder) -> Bool {
@@ -139,6 +178,8 @@ public final class FavoritesViewModel {
             return newMovie.releaseDate < existingMovie.releaseDate
         case .releaseDateDescending:
             return newMovie.releaseDate > existingMovie.releaseDate
+        case .recentlyAdded:
+            return false
         }
     }
 
@@ -148,26 +189,41 @@ public final class FavoritesViewModel {
             isLoadingNext = false
             error = nil
             items = []
-            currentPage = 1
-            canLoadMore = true
+            pageCursor = nil
         } else {
-            guard !isLoadingNext, canLoadMore else { return }
+            guard !isLoadingNext else { return }
             isLoadingNext = true
         }
 
-        let page = currentPage
-        let result = favoritesStore.getFavorites(page: page, pageSize: pageSize, sortOrder: sortOrder)
-
+        let effectiveOrder = sortOrder ?? .recentlyAdded
         if reset {
-            self.items = result
-            self.previousFavoriteIds = self.favoritesStore.favoriteMovieIds
+            favoritesStore
+                .fetchFirstPage(sortOrder: effectiveOrder, pageSize: pageSize)
+                .sink { [weak self] page in
+                    guard let self else { return }
+                    self.items = page.items
+                    self.pageCursor = page.cursor
+                    self.isLoading = false
+                    self.previousFavoriteIds = self.favoritesStore.favoriteMovieIds
+                }
+                .store(in: &cancellables)
+        } else if let cursor = pageCursor {
+            favoritesStore
+                .fetchNextPage(cursor: cursor, pageSize: pageSize)
+                .sink { [weak self] next in
+                    guard let self else { return }
+                    if !next.items.isEmpty {
+                        let existing = Set(self.items.map { $0.id })
+                        let newOnes = next.items.filter { !existing.contains($0.id) }
+                        self.items.append(contentsOf: newOnes)
+                    }
+                    self.pageCursor = next.cursor
+                    self.isLoadingNext = false
+                }
+                .store(in: &cancellables)
         } else {
-            self.items.append(contentsOf: result)
+            isLoadingNext = false
         }
-        self.isLoading = false
-        self.isLoadingNext = false
-        self.canLoadMore = result.count == self.pageSize
-        if self.canLoadMore { self.currentPage += 1 }
     }
 
     public func toggleFavorite(_ id: Int) {
@@ -177,16 +233,16 @@ public final class FavoritesViewModel {
     public func isFavorite(_ id: Int) -> Bool { favoritesStore.isFavorite(movieId: id) }
 
     public func setSortOrder(_ order: MovieSortOrder) {
-        // Mark that sort changed for scroll-to-top UX
         sortOrder = order
-        // Reload using local sort
         load(reset: true)
     }
 
     public func loadNextIfNeeded(currentItem: Movie?) {
-        guard let id = currentItem?.id,
-              let idx = items.firstIndex(where: { $0.id == id }),
-              idx >= max(items.count - 3, 0) else { return }
+        guard let currentItem,
+              let tailId = items.last?.id,
+              currentItem.id == tailId,
+              pageCursor != nil,
+              !isLoadingNext else { return }
         load(reset: false)
     }
 }
