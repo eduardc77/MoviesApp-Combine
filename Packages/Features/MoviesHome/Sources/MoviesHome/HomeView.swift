@@ -72,11 +72,13 @@ public struct HomeView: View {
                         .tag(category)
                     }
                 }
-                #if os(iOS)
+#if os(iOS)
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                #endif
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.clear)
+                .ignoresSafeArea(edges: .bottom)
+#endif
             }
-
         }
         .navigationTitle(Text(.HomeL10n.title))
         #if os(iOS)

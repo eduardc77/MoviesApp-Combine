@@ -13,7 +13,7 @@ import UIKit
 public enum NavigationAppearance {
     /// Configure global appearance for NavigationBar, TabBar
     @MainActor public static func configure() {
-        #if canImport(UIKit)
+#if canImport(UIKit)
         // MARK: Navigation Bar
         let navAppearance = UINavigationBarAppearance()
         navAppearance.configureWithOpaqueBackground()
@@ -22,9 +22,6 @@ public enum NavigationAppearance {
         let backButtonAppearance = UIBarButtonItemAppearance()
         backButtonAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor.white
-        ]
-        backButtonAppearance.highlighted.titleTextAttributes = [
-            .foregroundColor: UIColor.lightGray
         ]
         navAppearance.backButtonAppearance = backButtonAppearance
         navAppearance.titleTextAttributes = [
@@ -50,10 +47,9 @@ public enum NavigationAppearance {
         let tabBar = UITabBar.appearance()
         tabBar.standardAppearance = tabAppearance
         tabBar.scrollEdgeAppearance = tabAppearance
-        tabBar.barStyle = .black
         tabBar.tintColor = .white
-        #else
+#else
         // No-op on non-UIKit platforms (e.g., macOS when running SwiftPM tests)
-        #endif
+#endif
     }
 }
